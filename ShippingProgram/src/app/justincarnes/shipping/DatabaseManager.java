@@ -62,5 +62,10 @@ public class DatabaseManager
 				se.printStackTrace();}
 		catch(Exception e) {
 				e.printStackTrace();}	
+		
+		finally {
+			try { if(stmt != null) stmt.close(); } catch(SQLException se2) {}
+			try { if(conn != null) conn.close(); } catch(SQLException se) { se.printStackTrace(); }
+		}
 	}
 }
