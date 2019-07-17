@@ -2,13 +2,14 @@ package app.justincarnes.shipping;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.io.File;
 
 public class DatabaseManager 
 {
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-	static final String DB_URL = "jdbc:mysql://localhost/starfishcustomers";
+	static final String DB_URL = "jdbc:mysql://localhost:3306/starfishcustomers";
 	
-	static final String USERNAME = "root";
+	static final String USERNAME = "shipping";
 	static final String PASSWORD = "9146";
 	
 	ShippingProgramGUI gui = null;
@@ -38,9 +39,6 @@ public class DatabaseManager
 			String sql_Site = "select custName, siteName from site;";
 			String sql_AccountNumber = "select custName, siteName, serviceName from accountnumber;";
 			
-			conn.close();
-			stmt.close();
-			
 			ResultSet customers = stmt.executeQuery(sql_Customer);
 			ResultSet sites = stmt.executeQuery(sql_Site);
 			ResultSet accountNums = stmt.executeQuery(sql_AccountNumber);
@@ -51,7 +49,7 @@ public class DatabaseManager
 				siteKeys.add(sites.getString("custName") + " :: " + sites.getString("siteName"));
 			while(accountNums.next())
 				accNumKeys.add(accountNums.getString("custName") + " :: " + accountNums.getString("siteName") + " :: " + accountNums.getString("serviceName"));
-		
+			
 			customers.close();
 			sites.close();
 			accountNums.close();
@@ -67,5 +65,10 @@ public class DatabaseManager
 			try { if(stmt != null) stmt.close(); } catch(SQLException se2) {}
 			try { if(conn != null) conn.close(); } catch(SQLException se) { se.printStackTrace(); }
 		}
+	}
+	
+	public Object[] getCustKeys()
+	{
+		return custKeys.toArray();
 	}
 }

@@ -51,7 +51,7 @@ public class ShippingProgramGUI extends JFrame
 		JLabel lblSelectACustomer = new JLabel("Select a customer");	//A label for the combo box
 		contentPane.add(lblSelectACustomer);							//Adds label to the content pane
 		
-		JComboBox comboBox = new JComboBox();							//Creates a combo box for the customer list
+		JComboBox comboBox = new JComboBox(dbm.getCustKeys());			//Creates a combo box for the customer list
 		contentPane.add(comboBox);										//Adds combo box to content pane
 	}
 
