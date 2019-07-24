@@ -3,6 +3,11 @@ package app.justincarnes.shipping;
 import java.sql.*;
 import java.util.ArrayList;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 //A class to manage the MySQL database containing Starfish customer information
 //Fetches information from the database
@@ -17,14 +22,15 @@ public class DatabaseManager
 	static final String USERNAME = "shipping";
 	static final String PASSWORD = "9146";
 	
-	ShippingProgramGUI gui = null;	//Holds the current GUI instance
+	private ShippingProgramGUI gui = null;	//Holds the current GUI instance
 	
-	ArrayList<String> custKeys = new ArrayList<String>();	//This will hold all customer primary keys
-	ArrayList<String> siteKeys = new ArrayList<String>();	//This will hold siteName for all sites of selected customer
-	ArrayList<String> accNumKeys = new ArrayList<String>();	//This will hold serviceName for all accounts of selected customer
+	private ArrayList<String> custKeys = new ArrayList<String>();	//This will hold all customer primary keys
+	private ArrayList<String> siteKeys = new ArrayList<String>();	//This will hold siteName for all sites of selected customer
+	private ArrayList<String> accNumKeys = new ArrayList<String>();	//This will hold serviceName for all accounts of selected customer
 	
-	String activeCustomer = "";		//Keeps track of what customer is currently selected in the GUI combobox
-	String activeSite = "";			//Keeps track of which site is currently selected in the GUI combobox
+	private String activeCustomer = "";		//Keeps track of what customer is currently selected in the GUI combobox
+	private String activeSite = "";			//Keeps track of which site is currently selected in the GUI combobox
+	private String activeAcct = "";			//Keeps track of which account is currently selected in the GUI combobox
 	
 	//Constructor for the database manager object
 	//Currently accepts the active GUI instance, ideally console messages will be shown in the window in the future
@@ -55,7 +61,7 @@ public class DatabaseManager
 			conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);		
 			
 			custStmt = conn.createStatement();			
-			String sql_Customer = "select custName from customer;";
+			String sql_Customer = "select custName from customer;";		//Builds an SQL statement to get all custName values
 			ResultSet customers = custStmt.executeQuery(sql_Customer);	//Takes the above query and executes it in the DB
 			
 			//Iterates through result set and adds all "custName" values to the "custKeys" AList
@@ -79,10 +85,9 @@ public class DatabaseManager
 	
 	//A method to fetch the site list for the customer selected
 	//Will never be run before getCustList, only called when a selection is made in the customer ComboBox
-	public Object[] getSiteList(String custSelection)	
+	//Less commented because a lot of similar stuff is well-documented in the above method
+	public Object[] getSiteList()	
 	{
-		activeCustomer = custSelection;	//Saves the customer that the user currently has selected
-		
 		//Fail-safe if somehow "--Select one--" makes it here or customer has not been selected
 		//Neither scenario should ever happen, but you know
 		if(activeCustomer.equals("--Select one--") || activeCustomer.equals("")) return new Object[1];
@@ -124,10 +129,8 @@ public class DatabaseManager
 	
 	//A method to fetch the account information for the selected site
 	//Will never be called before customer or site are selected
-	public Object[] getAccountList(String siteSelection)
+	public Object[] getAccountList()
 	{
-		activeSite = siteSelection;
-		
 		//Fail-safe if somehow "--Select one--" makes it to cust/site, or cust/site has not been selected
 		//Neither scenario should ever happen, but you know
 		if(activeCustomer.equals("--Select one--") || activeCustomer.equals("") || activeSite.equals("--Select one--") || activeSite.equals(""))
@@ -169,6 +172,59 @@ public class DatabaseManager
 		return accNumKeys.toArray();
 	}
 	
+	///////////////////////////////////////////
+	//Getters and setters for active selections
+	///////////////////////////////////////////
+	
+	public void setActiveCustomer(String selection)
+	{
+		activeCustomer = selection;
+	}
+	
+	public void setActiveSite(String selection)
+	{
+		activeSite = selection;
+	}
+	
+	public void setActiveAccount(String selection)
+	{
+		activeAcct = selection;
+	}
+	
+	public String getActiveCustomer()
+	{
+		return activeCustomer;
+	}
+	
+	public String getActiveSite()
+	{
+		return activeSite;
+	}
+	
+	public String getActiveAccount()
+	{
+		return activeAcct;
+	}
+	
+	//A method to ensure new customer additions are added to the original SQL files
+	//This provides me with a way to easily rebuild the database if there is a data loss
+	private void addToCustomerInsertFile(String custName, String abbreviation, String PPA)
+	{
+		try {	//to point a FileWriter/PrintWriter combo at the desired SQL file
+			FileWriter fw = new FileWriter(new File("sql/ShipmentProgramInsert-Customer.sql"), true); //Append to file
+			PrintWriter pw = new PrintWriter(fw);
+			
+			//Build an insert statement based on the given info
+			String insertQuery = "insert into customer(custName, abbreviation, PPA)\n\tvalues('" 
+					+ custName + "', '" + abbreviation + "' , '" + PPA + "');\n";
+			
+			pw.println(insertQuery);	//Add to the file
+			pw.close();					//Cleanup
+			fw.close();
+		} catch (FileNotFoundException e) { e.printStackTrace(); }	//If the file isn't found
+		  catch (IOException ie) { ie.printStackTrace(); }			//If the file can't be written to
+		
+	}
 }
 
 

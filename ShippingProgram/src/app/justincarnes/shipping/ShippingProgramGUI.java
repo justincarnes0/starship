@@ -16,6 +16,20 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.CardLayout;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.ColumnSpec;
+import com.jgoodies.forms.layout.FormSpecs;
+import com.jgoodies.forms.layout.RowSpec;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import javax.swing.border.MatteBorder;
+import java.awt.Font;
 
 public class ShippingProgramGUI extends JFrame 
 {
@@ -24,6 +38,7 @@ public class ShippingProgramGUI extends JFrame
 	private DatabaseManager dbm;
 	private JComboBox comboBox_Customers;
 	private JComboBox comboBox_Sites;
+	private JComboBox comboBox_Accounts;
 
 	//Launches program
 	public static void main(String[] args) 
@@ -48,51 +63,101 @@ public class ShippingProgramGUI extends JFrame
 	//Creates the application frame
 	public ShippingProgramGUI() 
 	{
-		dbm = new DatabaseManager(this);								//Creates a database manager to interface with MySQL
+		dbm = new DatabaseManager(this);	//Creates a database manager to interface with MySQL
 		
-		setTitle("Starfish Shipping");									//Creates the label at the top of the window
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);					//Behavior when closing program
-		setBounds(100, 100, 500, 300);									//Sets default window size
-		contentPane = new JPanel();										//Creates a content pane
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));				//Content pane's border
-		setContentPane(contentPane);
-		contentPane.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		createCustomersBox();
+		setTitle("Starfish Shipping");		//Creates the label at the top of the window
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	//Behavior when closing program
+		setBounds(100, 100, 500, 300);		//Sets default window size
+		contentPane = new JPanel();			//Creates a content pane
+		contentPane.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));	//Content pane's border
+		setContentPane(contentPane);		//Specifies the created contentPane as the frame's contentPane
+		createCustomersBox();				//Calls the method to create the comboBox for customers
 	}
 	
+	//Creates the comboBox containing the list of all Starfish customers
 	private void createCustomersBox()
 	{
-		JLabel lblSelectACustomer = new JLabel("Select a customer");
-		contentPane.add(lblSelectACustomer);							
+		contentPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));	//Flow layout so resizing doesn't create too much empty space
+		JLabel lblSelectACustomer = new JLabel("Select a customer");	//A label for the comboBox
+		contentPane.add(lblSelectACustomer);							//Add the label to the contentPane
 		
-		comboBox_Customers = new JComboBox(dbm.getCustList());
-		comboBox_Customers.setModel(new DefaultComboBoxModel(new String[] {"--Select one--", "Aero Controls & DLE Consultants", "Aero Land & Marine", "Albioma Galion", "Alkhorayef Petroleum", "Allied Power Technologies", "APR Energy", "Arizona Public Service", "Arkansas Electric Cooperative Corporation", "Arnet Cleanpower", "Austin Energy", "Aviation Power & Marine", "Baseload Power", "BasicEParts", "Basin Electric Power Cooperative", "Belize Electricity Limited", "Black & Veatch", "Black Hills", "Brownsville Public Utility Board", "Bryan Texas Utilities", "Calpine Operating Services Co", "City of Medicine Hat", "City Water & Light (Jonesboro)", "Consumers Energy Company", "Coolidge Power", "CPS Energy", "CPV Sentinel", "Craig International", "Craig International Supplies", "DCP Midstream", "DEMEC", "Didrikson Associates", "DM Lieferant", "Dominion Energy", "DXP Enterprises", "East Kentucky Power Cooperative", "El Paso Electric Company", "Elliott Ebara Turbomachinery Corporation", "ELPower Trading", "Enesur/Adenty S.A.", "EthosEnergy", "EthosEnergy Australia", "Evolution Well Service", "Gamatech S.A.", "Gas Turbine Services", "Global IGT Solutions", "Hawaii Electric Light Company", "Hoosier Energy Rural Electric Cooperative", "I.S.R. Service Co.", "Instrumentation & Control Spares", "International Alliance Group", "LM Parts", "Los Angeles Department of Water and Power", "Louisiana Energy & Power Authority", "Lubbock Power & Light", "Madison Gas & Electric Company", "Maximum Turbine Support Europe", "Meritek Inc.", "Midwest Paper Group", "MSU Energy", "MTU Maintenance", "Municipal Light & Power", "New York Power Authority", "NRG Energy Center", "Oklahoma Municipal Power Authority", "Overseas Aviation", "Peru LNG S.R.L.", "Pinnacle Parts and Service Corporation", "Pio Pico Energy Center", "ProEnergy Services", "Ratchaburi World Cogeneration", "Siemens Energy", "SJ Turbine", "Sociedad Austral de Generacion y Energia Chile", "South Texas Electric Cooperative", "Starfish PPS", "Streamline Parts & Tooling", "Talen (Topaz Power Group)", "Texas A&M University", "The University of Texas at Austin", "Thermal Energy Corporation", "Toyo Thai Power Myanmar", "TransCanada", "University Park Energy", "V&A Hi-Tech", "Valve & Instrument Express", "VBR Turbine Partners", "WDF Aviation Services", "Western Farmers Electric Cooperative", "Wildflower Energy"}));
-		contentPane.add(comboBox_Customers);
+		comboBox_Customers = new JComboBox(dbm.getCustList());	//Constructs the comboBox, feeding the constructor the list of customers retrieved by the database manager
+		contentPane.add(comboBox_Customers);					//Adds the comboBox to the contentPane
 		
+		//Creates a listener for the act of selecting a customer
 		comboBox_Customers.addItemListener(new ItemListener() 
 		{
 			public void itemStateChanged(ItemEvent custSelectedEvent) 
 			{
-				String selection = (String) custSelectedEvent.getItem();
-				if(selection.equals("--Select one--"))
+				String selection = (String) custSelectedEvent.getItem(); //Holds the newly selected customer
+				if(selection.equals("--Select one--"))	//Ensures that the default value is not passed along
 					return;
-				else createSitesBox(selection);
+				else {
+					dbm.setActiveCustomer(selection);	//Tell the DatabaseManager which customer is actively selected
+					if(comboBox_Sites != null)			//If there has already been a selection, repopulate the existing box of sites
+						repopSitesBox();				
+					else createSitesBox();				//If this is the first selection, create the sites box from scratch
+				}
 			}
 		});
 	}
 	
-	private void createSitesBox(String selection)
+	//Creates the comboBox for customer sites
+	private void createSitesBox()
 	{
+		//Creates the label and adds it to the pane
 		JLabel lblSelectASite = new JLabel("Select a site");
 		lblSelectASite.setBounds(57, 59, 58, 14);
 		contentPane.add(lblSelectASite);
 		
-		comboBox_Sites = new JComboBox(dbm.getSiteList(selection));
+		//Creates the box
+		comboBox_Sites = new JComboBox(dbm.getSiteList());
 		comboBox_Sites.setBounds(120, 56, 251, 20);
 		
+		//Adds the box to the pane and makes sure it displays correctly
 		contentPane.add(comboBox_Sites);
-		contentPane.validate();
-		contentPane.repaint();
+		contentPane.validate();	//Must validate the pane after a new component is added
+		contentPane.repaint();	//Repaint to visually update after validation
 		
+		//Adds a listener to the box, checking for a new selection
+		comboBox_Sites.addItemListener(new ItemListener() 
+		{
+			public void itemStateChanged(ItemEvent siteSelectedEvent) 
+			{
+				String selection = (String) siteSelectedEvent.getItem();
+				if(selection.equals("--Select one--"))
+					return;
+				else {
+					dbm.setActiveSite(selection);
+					//TODO create a repop method for the accounts box
+					createAccountsBox();
+				}
+			}
+		});
+		
+	}
+	
+	//A method to refetch sites when the customer selection is changed
+	private void repopSitesBox()
+	{
+		comboBox_Sites.removeAllItems();
+		Object[] siteList = dbm.getSiteList();
+		for(Object x : siteList)
+			comboBox_Sites.addItem(x);
+	}
+	
+	//TODO make this actually create the accounts comboBox
+	private void createAccountsBox()
+	{
+		
+	}
+	
+	//A method to refetch accounts when the customer or site selection changes
+	private void repopAccountsBox()
+	{
+		comboBox_Accounts.removeAllItems();
+		Object[] acctList = dbm.getAccountList();
+		for(Object x : acctList)
+			comboBox_Accounts.addItem(x);
 	}
 }

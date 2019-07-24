@@ -152,7 +152,7 @@ insert into customer(custName, abbreviation, PPA)
 	values('Los Angeles Department of Water and Power', 'LADWP', 'N');
 	
 insert into customer(custName, abbreviation, PPA)
-	values('Lousiana Energy & Power Authority', 'LEPA', 'Y');
+	values('Louisiana Energy & Power Authority', 'LEPA', 'Y');
 	
 insert into customer(custName, abbreviation, PPA)
 	values('LM Parts', 'LMP', 'N');

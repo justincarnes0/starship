@@ -86,7 +86,7 @@ insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, c
 	values('Basin Electric Power Cooperative', 'Lonesome Creek Station', '2648 140th Ave NW', 'Alexander', 'South Dakota', 'United States', '58831');
 
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
-	values('Basin Electric Power Cooperative', 'Pioneer Generating Station', '5639 151st Ave NW', 'Williston', 'North Dakota', '58801');	
+	values('Basin Electric Power Cooperative', 'Pioneer Generating Station', '5639 151st Ave NW', 'Williston', 'North Dakota', 'United States', '58801');	
 	
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
 	values('Belize Electricity Limited', 'Belize City Plant', 'Magazine Road', 'Belize City', null, 'Belize', null);
@@ -170,7 +170,7 @@ insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, c
 	values('Didrikson Associates', 'Didrikson Associates', '1405 Turtle Creek Drive', 'Lufkin', 'Texas', 'United States', '75904');
 
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
-	values('DM Lieferant', 'Vilnus Tranzitas', 'J. Dobkevičiaus str.: Bld 5, Room 301', 'Vilnius', null, 'Lithuania', 'LT-02189');	
+	values('DM Lieferant', 'Vilnus Tranzitas', 'J. DobkeviÄ�iaus str.: Bld 5, Room 301', 'Vilnius', null, 'Lithuania', 'LT-02189');	
 	
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
 	values('Dominion Energy', 'Cove Point', '80 Anchorage Lane', 'Lusby', 'Maryland', 'United States', '20657');
@@ -209,10 +209,10 @@ insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, c
 	values('EthosEnergy Australia', 'Tigers USA Global Logistics', '14950 FAA Blvd: Suite 100', 'Fort Worth', 'Texas', 'United States', '76155');
 	
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
-	values('Evolution Well Services', 'ElectroQuip', '8145 Miller Rd No. 2', 'Houston', 'Texas', 'United States', '77049');
+	values('Evolution Well Service', 'ElectroQuip', '8145 Miller Rd No. 2', 'Houston', 'Texas', 'United States', '77049');
 	
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
-	values('Evolution Well Services', 'HampCo', '1625 W. Grand Prkwy N', 'Katy', 'Texas', 'United States', '77493');
+	values('Evolution Well Service', 'HampCo', '1625 W. Grand Prkwy N', 'Katy', 'Texas', 'United States', '77493');
 	
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
 	values('Gamatech S.A.', 'Adenty S.A.', 'Verdi 4548', 'Montevideo', null, 'Uruguay', '11200');
@@ -236,7 +236,7 @@ insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, c
 	values('Hoosier Energy Rural Electric Cooperative', 'Worthington Generating Station', '3179 N US Highway 231', 'Switz City', 'Indiana', 'United States', '47465');
 
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
-	values('Hoosier Energy Rural Electric Cooperative', 'Lawrence Generating Station', '1000 S Old Palistine Rd', 'Mitchell', 'Indiana' 'United States', '47446');
+	values('Hoosier Energy Rural Electric Cooperative', 'Lawrence Generating Station', '1000 S Old Palistine Rd', 'Mitchell', 'Indiana', 'United States', '47446');
 
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
 	values('International Alliance Group', 'Flint Hills', '13775 Clark Rd', 'Rosemount', 'Minnesota', 'United States', '55068');
@@ -326,7 +326,7 @@ insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, c
 	values('Peru LNG S.R.L.', 'Agility Project Logistics', '2928 Greens Road', 'Houston', 'Texas', 'United States', '77032');
 
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
-	values('Pinnacle Parts and Services Corporation', 'Pinnacle Parts and Services', '18 Hickory Lane', 'Bayville', 'New Jersey', 'United States', '08721');
+	values('Pinnacle Parts and Service Corporation', 'Pinnacle Parts and Services', '18 Hickory Lane', 'Bayville', 'New Jersey', 'United States', '08721');
 
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
 	values('Pio Pico Energy Center', 'Pio Pico Energy Center', '7363 Calzada de la Fuente', 'San Diego', 'California', 'United States', '92154');
