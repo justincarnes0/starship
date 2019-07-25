@@ -80,9 +80,9 @@ public class ShippingProgramGUI extends JFrame
 		contentPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));	//Flow layout so resizing doesn't create too much empty space
 		JLabel lblSelectACustomer = new JLabel("Select a customer");	//A label for the comboBox
 		contentPane.add(lblSelectACustomer);							//Add the label to the contentPane
-		
-		comboBox_Customers = new JComboBox(dbm.getCustList());	//Constructs the comboBox, feeding the constructor the list of customers retrieved by the database manager
-		contentPane.add(comboBox_Customers);					//Adds the comboBox to the contentPane
+		//Constructs the comboBox, feeding the constructor the list of customers retrieved by the database manager
+		comboBox_Customers = new JComboBox(dbm.getPrimaryKeyList("Customers"));	
+		contentPane.add(comboBox_Customers);	//Adds the comboBox to the contentPane
 		
 		//Creates a listener for the act of selecting a customer
 		comboBox_Customers.addItemListener(new ItemListener() 
@@ -111,7 +111,7 @@ public class ShippingProgramGUI extends JFrame
 		contentPane.add(lblSelectASite);
 		
 		//Creates the box
-		comboBox_Sites = new JComboBox(dbm.getSiteList());
+		comboBox_Sites = new JComboBox(dbm.getPrimaryKeyList("Sites"));
 		comboBox_Sites.setBounds(120, 56, 251, 20);
 		
 		//Adds the box to the pane and makes sure it displays correctly
