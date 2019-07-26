@@ -81,7 +81,7 @@ public class ShippingProgramGUI extends JFrame
 		JLabel lblSelectACustomer = new JLabel("Select a customer");	//A label for the comboBox
 		contentPane.add(lblSelectACustomer);							//Add the label to the contentPane
 		//Constructs the comboBox, feeding the constructor the list of customers retrieved by the database manager
-		comboBox_Customers = new JComboBox(dbm.getPrimaryKeyList("Customers"));	
+		comboBox_Customers = new JComboBox(dbm.getPrimaryKeyList(tableNames.CUSTOMERS));	
 		contentPane.add(comboBox_Customers);	//Adds the comboBox to the contentPane
 		
 		//Creates a listener for the act of selecting a customer
@@ -141,7 +141,7 @@ public class ShippingProgramGUI extends JFrame
 	private void repopSitesBox()
 	{
 		comboBox_Sites.removeAllItems();
-		Object[] siteList = dbm.getSiteList();
+		Object[] siteList = dbm.getPrimaryKeyList("Sites");
 		for(Object x : siteList)
 			comboBox_Sites.addItem(x);
 	}
