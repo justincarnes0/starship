@@ -263,4 +263,7 @@ insert into customer(custName, abbreviation, PPA)
 	values('Wildflower Energy', 'WE', 'Y');
 
 
-	
+
+insert into customer(custName, abbreviation, PPA)
+	values('PowerPac LLC', 'PP' , 'N');
+

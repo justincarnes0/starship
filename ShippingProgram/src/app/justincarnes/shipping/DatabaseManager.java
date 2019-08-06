@@ -18,12 +18,15 @@ enum tableNames { CUSTOMERS, SITES, ACCOUNTS }
 //Creates backup files to rebuild the database in case of data loss
 public class DatabaseManager 
 {
-	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";	//Driver package
-	static final String DB_URL 		= "jdbc:mysql://localhost/starfishcustomers";	//URL for database: for now, locally hosted
+	public static final String SELECT_ONE = "--Select one--";
+	public static final String ADD_NEW 	  = "--Add new--";
+	
+	private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";	//Driver package
+	private static final String DB_URL 		= "jdbc:mysql://localhost/starfishcustomers";	//URL for database: for now, locally hosted
 	
 	//Database credentials
-	static final String USERNAME = "shipping";
-	static final String PASSWORD = "9146";
+	private static final String USERNAME = "shipping";
+	private static final String PASSWORD = "9146";
 	
 	private ShippingProgramGUI gui = null;	//Holds the current GUI instance
 	
@@ -68,13 +71,11 @@ public class DatabaseManager
 		//If something is already in the list, flush it
 		if(!tableKeys.isEmpty()) tableKeys.clear();		
 				
-		tableKeys.add("--Select one--");	//Gives the combobox a default value, will be an invalid selection
-		tableKeys.add("--Add new--");		//If selected, will allow the user to add a new entry
+		tableKeys.add(SELECT_ONE);	//Gives the combobox a default value, will be an invalid selection
+		tableKeys.add(ADD_NEW);		//If selected, will allow the user to add a new entry
 		
-		
-		
-		boolean invalidActiveCust = activeCustomer.equals("--Select one--") || activeCustomer.equals("");
-		boolean invalidActiveSite = activeSite.equals("--Select one--") || activeSite.equals("");
+		boolean invalidActiveCust = activeCustomer.equals(SELECT_ONE) || activeCustomer.equals("");
+		boolean invalidActiveSite = activeSite.equals(SELECT_ONE) || activeSite.equals("");
 		
 		if(tableName.equals(tableNames.SITES) 	&& invalidActiveCust) 						   return new Object[1];
 		if(tableName.equals(tableNames.ACCOUNTS) && (invalidActiveCust || invalidActiveSite))  return new Object[1];
@@ -122,7 +123,7 @@ public class DatabaseManager
 		
 		addToInsertFile(insertQuery, 1);	//Passes the generated query to addToInsertFile
 		
-		runBasicQuery(insertQuery);
+		runUpdateQuery(insertQuery);
 	}
 	
 	//A method to add a new, user-defined site to the database for the selected customer
@@ -141,7 +142,7 @@ public class DatabaseManager
 		
 		addToInsertFile(insertQuery, 2);
 		
-		runBasicQuery(insertQuery);
+		runUpdateQuery(insertQuery);
 	}
 	
 	//A method to ensure new additions are added to the original SQL files
@@ -170,7 +171,7 @@ public class DatabaseManager
 	////////////////////////////
 	
 	//A method to run a query where no data needs to be extracted from the ResultSet
-	private void runBasicQuery(String sql)
+	private void runUpdateQuery(String sql)
 	{
 		Connection conn = null;
 		Statement stmt = null;
@@ -180,7 +181,7 @@ public class DatabaseManager
 			conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
 			stmt = conn.createStatement();
 
-			stmt.executeQuery(sql);
+			stmt.executeUpdate(sql);
 			
 			conn.close();
 			stmt.close();

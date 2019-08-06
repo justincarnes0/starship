@@ -400,3 +400,6 @@ insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, c
 insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
 	values('Wildflower Energy', 'Larkspur Energy', '9355 Otay Mesa Rd', 'San Diego', 'California', 'United States', '92154');
 	
+	
+insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)
+	values('PowerPac LLC', 'PowerPac LLC', '26407 Prairie Rd', 'Sedalia', 'Montana', 'United States', '65301');
