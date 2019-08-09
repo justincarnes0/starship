@@ -2,69 +2,217 @@ package app.justincarnes.shipping;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
 
 
-public class ShippingProgramGUI extends JFrame 
+public class ShippingProgramGUI
 {
-	private JPanel contentPane;
+	private JFrame frame;
+	
+	private JPanel cardDeck;
 	private JPanel startPageCard;
 	private DatabaseManager dbm;
+	private HashMap<Integer, JComboBox> comboBoxes = new HashMap<Integer, JComboBox>();
+	
 	private JComboBox comboBox_Customers;
 	private JComboBox comboBox_Sites;
 	private JComboBox comboBox_Accounts;
-	
-	//Launches program
-	public static void main(String[] args) 
-	{
-		//I believe this creates the program instance in a new thread
-		//From what I understand, this is preferable to doing it directly in the main method
-		EventQueue.invokeLater(new Runnable() 
-		{
-			public void run() 
-			{
-				try {
-					ShippingProgramGUI frame = new ShippingProgramGUI();//Creates instance of GUI
-					frame.setVisible(true);								//Makes GUI visible to user: window pops up
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
+	
 	//GUI Constructor
 	//Creates the application frame
 	public ShippingProgramGUI() 
 	{
-		dbm = new DatabaseManager(this);	//Creates a database manager to interface with MySQL
+		frame = new JFrame("Starfish Shipping");	
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
+		frame.setBounds(100, 100, 500, 300);		
+		frame.setLayout(new CardLayout());	
 		
-		setTitle("Starfish Shipping");	
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
-		setBounds(100, 100, 500, 300);		
-		setLayout(new CardLayout());		
-		contentPane = new JPanel();			
-		contentPane.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
-		setContentPane(contentPane);		
-		//Flow layout so resizing doesn't create too much empty space
-		contentPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));	
-		
+		cardDeck = new JPanel();
 		startPageCard = new JPanel();
 		startPageCard.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		createCustomersBox();
-		contentPane.add(startPageCard);
+		
+		createComboBox(ShippingProgram.CUSTOMERS);
+		frame.setVisible(true);
 	}
 	
-	//Creates the comboBox containing the list of all Starfish customers
+	
+	private void createComboBox(int tableName)
+	{
+		JLabel comboBoxLabel = new JLabel();
+		switch(tableName)
+		{
+			case ShippingProgram.CUSTOMERS:
+				comboBoxLabel.setText("Select a customer:");
+				break;
+			case ShippingProgram.SITES:
+				comboBoxLabel.setText("Select a site:");
+				break;
+			case ShippingProgram.ACCOUNTS:
+				comboBoxLabel.setText("Select an account:");
+				break;
+			default:
+				comboBoxLabel.setText("Something's wrong here");
+		}
+		
+		startPageCard.add(comboBoxLabel);
+		comboBoxes.put(tableName, new JComboBox(dbm.getPrimaryKeyList(tableName)));
+		
+		JComboBox currentBox = comboBoxes.get(tableName);
+		startPageCard.add(currentBox);
+		
+		currentBox.addItemListener(new ItemListener()
+		{
+			public void itemStateChanged(ItemEvent selectionEvent) 
+			{
+				String selection = (String) selectionEvent.getItem(); //Holds the newly selected customer
+				if(selection.equals(ShippingProgram.SELECT_ONE))	//Ensures that the default value is not passed along
+					return;
+				else if(selection.equals(ShippingProgram.ADD_NEW))
+					promptNewEntry(tableName);
+				else {
+					dbm.setActiveSelection(tableName, selection); 
+					
+					if(tableName < ShippingProgram.ACCOUNTS)
+						if(comboBoxes.get(tableName + 1) != null)
+							repopComboBox(tableName + 1);
+						else createComboBox(tableName + 1);		
+				}
+			}
+		});
+		
+		//contentPane.revalidate();
+		//contentPane.repaint();
+		startPageCard.revalidate();
+		startPageCard.repaint();
+	}
+	
+	private void repopComboBox(int tableName)
+	{
+		JComboBox currentBox = comboBoxes.get(tableName);
+		currentBox.removeAllItems();
+		Object[] siteList = dbm.getPrimaryKeyList(tableName);
+		for(Object x : siteList)
+			currentBox.addItem(x);
+		currentBox.setSelectedIndex(0);
+	}
+	
+	private void promptNewEntry(int tableName)
+	{
+		ComboBoxModel currentBoxModel = comboBoxes.get(tableName).getModel();
+		ArrayList<String> CBModelItems = new ArrayList<String>();
+		for(int i = 0; i < currentBoxModel.getSize(); i++)
+			CBModelItems.add((String)currentBoxModel.getElementAt(i));
+		
+		switch(tableName)
+		{
+			case ShippingProgram.CUSTOMERS:
+				JTextField custName = new JTextField();
+				JTextField abbreviation = new JTextField();
+			
+				String[] choices = {ShippingProgram.SELECT_ONE, "Y", "N"};
+				JComboBox PPA = new JComboBox(choices);
+			
+				Object[] promptC = { "Customer name: ", custName, "Customer abbreviation: ", abbreviation, "Prepay & Add shipping?", PPA };
+			
+				int optionC = JOptionPane.showConfirmDialog(startPageCard, promptC, "New customer", JOptionPane.OK_CANCEL_OPTION);
+			
+				String custNameInput = custName.getText();
+				String abbrInput = abbreviation.getText();
+				String PPAChoice = (String) PPA.getSelectedItem();
+			
+				if(optionC == JOptionPane.OK_OPTION)
+				{
+					if(custNameInput == "" || abbrInput == "")
+					{
+						JOptionPane.showMessageDialog(startPageCard, "Fields cannot be left blank, please try again.");
+						optionC = JOptionPane.CANCEL_OPTION;
+					}
+					else if(PPAChoice == ShippingProgram.SELECT_ONE)
+					{
+						JOptionPane.showMessageDialog(startPageCard, "You must select an option for 'Prepay & add shipping?'.");
+						optionC = JOptionPane.CANCEL_OPTION;
+					}
+					else if(CBModelItems.contains(custNameInput))
+					{
+						JOptionPane.showMessageDialog(startPageCard, "This customer already exists in the database.");
+						optionC = JOptionPane.CANCEL_OPTION;
+					}
+				
+					else { 
+						dbm.addNewCustomer(custNameInput, abbrInput, PPAChoice);
+						repopComboBox(tableName);
+					}
+				}
+				break;
+				
+			case ShippingProgram.SITES:
+				JTextField siteName 	 	  = new JTextField();
+				JTextField streetAddress 	  = new JTextField();
+				JTextField streetAddressLine2 = new JTextField();
+				JTextField cityAddress 		  = new JTextField();
+				JTextField stateAddress 	  = new JTextField();
+				JTextField countryAddress 	  = new JTextField();
+				JTextField zipAddress 		  = new JTextField();
+				
+				Object[] promptS = 
+					{ "Customer name: ",  		 						 		  dbm.getActiveSelection(ShippingProgram.CUSTOMERS), 
+					  "Site name: ", 				 						 	  siteName, 
+					  "Street address (Line 1): ", 						 		  streetAddress,
+					  "Street address (Line 2, leave blank if not applicable): ", streetAddressLine2,
+					  "City: ",					 						 		  cityAddress,
+					  "State (Leave blank if not applicable): ",  		 		  stateAddress,
+					  "Country: ", 										 		  countryAddress,
+					  "ZIP/Postal Code (Leave blank if not applicable): ", 		  zipAddress };
+				
+				int optionS = JOptionPane.showConfirmDialog(startPageCard, promptS, "New site", JOptionPane.OK_CANCEL_OPTION);
+				
+				String siteNameInput  = siteName.getText();
+				
+				String streetAddInput = streetAddress.getText();
+				if(streetAddressLine2.getText() != "")
+					streetAddInput 	 += ": " + streetAddressLine2.getText();
+				
+				String cityInput	  = cityAddress.getText();
+				String stateInput	  = (stateAddress.getText() == "" ? "NULL" : stateAddress.getText());
+				String countryInput   = countryAddress.getText();
+				String zipInput		  = (zipAddress.getText() == ""   ? "NULL" : zipAddress.getText());
+				
+				if(optionS == JOptionPane.OK_OPTION)
+				{
+					if(siteNameInput == "" || streetAddInput == "" || cityInput == "" || countryInput == "")
+					{
+						JOptionPane.showMessageDialog(startPageCard, "Fields cannot be left blank unless specifically stated, please try again.");
+						optionS = JOptionPane.CANCEL_OPTION;
+					}
+					else if(CBModelItems.contains(siteNameInput))
+					{
+						JOptionPane.showMessageDialog(startPageCard, "This site already exists in the database.");
+						optionS = JOptionPane.CANCEL_OPTION;
+					}
+					
+					else { 
+						dbm.addNewSite(siteNameInput, streetAddInput, cityInput, stateInput, countryInput, zipInput);
+						repopComboBox(tableName);
+					}
+				}
+				break;	
+			
+			default:
+				System.out.println("Completely illogical result");
+		}
+	}
+	
+/*	//Creates the comboBox containing the list of all Starfish customers
 	private void createCustomersBox()
 	{
 		JLabel lblSelectACustomer = new JLabel("Select a customer");	//A label for the comboBox
 		startPageCard.add(lblSelectACustomer);							//Add the label to the startPageCard
 		//Constructs the comboBox, feeding the constructor the list of customers retrieved by the database manager
-		comboBox_Customers = new JComboBox(dbm.getPrimaryKeyList(tableNames.CUSTOMERS));	
+		comboBox_Customers = new JComboBox(dbm.getPrimaryKeyList(int.CUSTOMERS));	
 		startPageCard.add(comboBox_Customers);	//Adds the comboBox to the startPageCard
 		
 		//Creates a listener for the act of selecting a customer
@@ -73,12 +221,12 @@ public class ShippingProgramGUI extends JFrame
 			public void itemStateChanged(ItemEvent custSelectedEvent) 
 			{
 				String selection = (String) custSelectedEvent.getItem(); //Holds the newly selected customer
-				if(selection.equals(DatabaseManager.SELECT_ONE))	//Ensures that the default value is not passed along
+				if(selection.equals(ShippingProgram.SELECT_ONE))	//Ensures that the default value is not passed along
 					return;
-				if(selection.equals(DatabaseManager.ADD_NEW))
+				if(selection.equals(ShippingProgram.ADD_NEW))
 					promptNewCustomer();
 				else {
-					dbm.setActiveSelection(tableNames.CUSTOMERS, selection); //Tell the DatabaseManager which customer is actively selected
+					dbm.setActiveSelection(ShippingProgram.CUSTOMERS, selection); //Tell the DatabaseManager which customer is actively selected
 					if(comboBox_Sites != null)		//If there has already been a selection, repopulate the existing box of sites
 						repopSitesBox();				
 					else createSitesBox();			//If this is the first selection, create the sites box from scratch
@@ -91,7 +239,7 @@ public class ShippingProgramGUI extends JFrame
 	private void repopCustomersBox()
 	{
 		comboBox_Sites.removeAllItems();
-		Object[] siteList = dbm.getPrimaryKeyList(tableNames.CUSTOMERS);
+		Object[] siteList = dbm.getPrimaryKeyList(ShippingProgram.CUSTOMERS);
 		for(Object x : siteList)
 			comboBox_Sites.addItem(x);
 		comboBox_Sites.setSelectedIndex(0);
@@ -106,7 +254,7 @@ public class ShippingProgramGUI extends JFrame
 		startPageCard.add(lblSelectASite);
 		
 		//Creates the box
-		comboBox_Sites = new JComboBox(dbm.getPrimaryKeyList(tableNames.SITES));
+		comboBox_Sites = new JComboBox(dbm.getPrimaryKeyList(int.SITES));
 		comboBox_Sites.setBounds(120, 56, 251, 20);
 		
 		//Adds the box to the pane and makes sure it displays correctly
@@ -122,12 +270,12 @@ public class ShippingProgramGUI extends JFrame
 			public void itemStateChanged(ItemEvent siteSelectedEvent) 
 			{
 				String selection = (String) siteSelectedEvent.getItem();
-				if(selection.equals(DatabaseManager.SELECT_ONE))
+				if(selection.equals(ShippingProgram.SELECT_ONE))
 					return;
-				if(selection.equals(DatabaseManager.ADD_NEW))
+				if(selection.equals(ShippingProgram.ADD_NEW))
 					promptNewSite();
 				else {
-					dbm.setActiveSelection(tableNames.SITES, selection); //Tell the DatabaseManager which site is actively selected
+					dbm.setActiveSelection(ShippingProgram.SITES, selection); //Tell the DatabaseManager which site is actively selected
 					if(comboBox_Accounts != null)	//If there has already been a selection, repopulate the existing box of accounts
 						repopAccountsBox();				
 					else createAccountsBox();		//If this is the first selection, create the accounts box from scratch
@@ -141,7 +289,7 @@ public class ShippingProgramGUI extends JFrame
 	private void repopSitesBox()
 	{
 		comboBox_Sites.removeAllItems();
-		Object[] siteList = dbm.getPrimaryKeyList(tableNames.SITES);
+		Object[] siteList = dbm.getPrimaryKeyList(ShippingProgram.SITES);
 		for(Object x : siteList)
 			comboBox_Sites.addItem(x);
 		comboBox_Sites.setSelectedIndex(0);
@@ -157,7 +305,7 @@ public class ShippingProgramGUI extends JFrame
 	private void repopAccountsBox()
 	{
 		comboBox_Accounts.removeAllItems();
-		Object[] acctList = dbm.getPrimaryKeyList(tableNames.ACCOUNTS);
+		Object[] acctList = dbm.getPrimaryKeyList(ShippingProgram.ACCOUNTS);
 		for(Object x : acctList)
 			comboBox_Accounts.addItem(x);
 		comboBox_Accounts.setSelectedIndex(0);
@@ -168,7 +316,7 @@ public class ShippingProgramGUI extends JFrame
 		JTextField custName = new JTextField();
 		JTextField abbreviation = new JTextField();
 		
-		String[] choices = {DatabaseManager.SELECT_ONE, "Y", "N"};
+		String[] choices = {ShippingProgram.SELECT_ONE, "Y", "N"};
 		JComboBox PPA = new JComboBox(choices);
 		
 		Object[] prompt = { "Customer name: ", custName, "Customer abbreviation: ", abbreviation, "Prepay & Add shipping?", PPA };
@@ -191,7 +339,7 @@ public class ShippingProgramGUI extends JFrame
 				JOptionPane.showMessageDialog(startPageCard, "Fields cannot be left blank, please try again.");
 				option = JOptionPane.CANCEL_OPTION;
 			}
-			else if(PPAChoice == DatabaseManager.SELECT_ONE)
+			else if(PPAChoice == ShippingProgram.SELECT_ONE)
 			{
 				JOptionPane.showMessageDialog(startPageCard, "You must select an option for 'Prepay & add shipping?'.");
 				option = JOptionPane.CANCEL_OPTION;
@@ -220,7 +368,7 @@ public class ShippingProgramGUI extends JFrame
 		JTextField zipAddress 		  = new JTextField();
 		
 		Object[] prompt = 
-			{ "Customer name: ",  		 						 		  dbm.getActiveSelection(tableNames.CUSTOMERS), 
+			{ "Customer name: ",  		 						 		  dbm.getActiveSelection(ShippingProgram.CUSTOMERS), 
 			  "Site name: ", 				 						 	  siteName, 
 			  "Street address (Line 1): ", 						 		  streetAddress,
 			  "Street address (Line 2, leave blank if not applicable): ", streetAddressLine2,
@@ -266,5 +414,5 @@ public class ShippingProgramGUI extends JFrame
 				repopSitesBox();
 			}
 		}
-	}
+	}*/
 }

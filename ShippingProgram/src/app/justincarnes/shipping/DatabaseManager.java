@@ -9,18 +9,10 @@ import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-//An enumeration of the available table names
-enum tableNames { CUSTOMERS, SITES, ACCOUNTS }
 
 //A class to manage the MySQL database containing Starfish customer information
-//Fetches information from the database
-//Adds new info to the database
-//Creates backup files to rebuild the database in case of data loss
 public class DatabaseManager 
-{
-	public static final String SELECT_ONE = "--Select one--";
-	public static final String ADD_NEW 	  = "--Add new--";
-	
+{	
 	private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";	//Driver package
 	private static final String DB_URL 		= "jdbc:mysql://localhost/starfishcustomers";	//URL for database: for now, locally hosted
 	
@@ -30,8 +22,8 @@ public class DatabaseManager
 	
 	private ShippingProgramGUI gui = null;	//Holds the current GUI instance
 	
-	private HashMap<tableNames, ArrayList<String>> primaryKeys	= new HashMap<tableNames, ArrayList<String>>();
-	private HashMap<tableNames, String> activeSelections 		= new HashMap<tableNames, String>();
+	private HashMap<Integer, ArrayList<String>> primaryKeys	= new HashMap<Integer, ArrayList<String>>();
+	private HashMap<Integer, String> activeSelections 		= new HashMap<Integer, String>();
 	
 	///////////////////////////////////////////////
 	//Constructor for the database manager object//
@@ -42,13 +34,13 @@ public class DatabaseManager
 	{
 		gui = SPGui;
 		
-		primaryKeys.put(tableNames.CUSTOMERS, new ArrayList<String>());
-		primaryKeys.put(tableNames.SITES, 	 new ArrayList<String>());
-		primaryKeys.put(tableNames.ACCOUNTS,  new ArrayList<String>());
+		primaryKeys.put(ShippingProgram.CUSTOMERS, new ArrayList<String>());
+		primaryKeys.put(ShippingProgram.SITES, 	 new ArrayList<String>());
+		primaryKeys.put(ShippingProgram.ACCOUNTS,  new ArrayList<String>());
 		
-		activeSelections.put(tableNames.CUSTOMERS, "");
-		activeSelections.put(tableNames.SITES, 	  "");
-		activeSelections.put(tableNames.ACCOUNTS,  "");
+		activeSelections.put(ShippingProgram.CUSTOMERS, "");
+		activeSelections.put(ShippingProgram.SITES, 	  "");
+		activeSelections.put(ShippingProgram.ACCOUNTS,  "");
 		
 		try { //to register the driver
 			Class.forName(JDBC_DRIVER);
@@ -60,32 +52,35 @@ public class DatabaseManager
 	//Getters and setters//
 	///////////////////////
 	
-	public Object[] getPrimaryKeyList(tableNames tableName)
+	public Object[] getPrimaryKeyList(int tableName)
 	{
 		ArrayList<String> tableKeys = primaryKeys.get(tableName);
-		String activeCustomer 		= activeSelections.get(tableNames.CUSTOMERS);
-		String activeSite 			= activeSelections.get(tableNames.SITES);
+		String activeCustomer 		= activeSelections.get(ShippingProgram.CUSTOMERS);
+		String activeSite 			= activeSelections.get(ShippingProgram.SITES);
 		//Holds the name of the field to be retrieved for the active table
-		String fieldName = tableName.equals(tableNames.CUSTOMERS) ? "custName" : (tableName.equals(tableNames.SITES) ? "siteName" : "serviceName");
+		String fieldName = ((tableName == ShippingProgram.CUSTOMERS) 
+				? "custName" : (tableName == ShippingProgram.SITES ? "siteName" : "serviceName"));
 		
 		//If something is already in the list, flush it
 		if(!tableKeys.isEmpty()) tableKeys.clear();		
 				
-		tableKeys.add(SELECT_ONE);	//Gives the combobox a default value, will be an invalid selection
-		tableKeys.add(ADD_NEW);		//If selected, will allow the user to add a new entry
+		tableKeys.add(ShippingProgram.SELECT_ONE);	//Gives the combobox a default value, will be an invalid selection
+		tableKeys.add(ShippingProgram.ADD_NEW);		//If selected, will allow the user to add a new entry
 		
-		boolean invalidActiveCust = activeCustomer.equals(SELECT_ONE) || activeCustomer.equals("");
-		boolean invalidActiveSite = activeSite.equals(SELECT_ONE) || activeSite.equals("");
+		boolean invalidActiveCust = activeCustomer.equals(ShippingProgram.SELECT_ONE) || activeCustomer.equals("");
+		boolean invalidActiveSite = activeSite.equals(ShippingProgram.SELECT_ONE) || activeSite.equals("");
 		
-		if(tableName.equals(tableNames.SITES) 	&& invalidActiveCust) 						   return new Object[1];
-		if(tableName.equals(tableNames.ACCOUNTS) && (invalidActiveCust || invalidActiveSite))  return new Object[1];
+		//Return empty lists if somehow an invalid selection makes it here
+		if(tableName == ShippingProgram.SITES 	 &&  invalidActiveCust) 					   return new Object[1];
+		if(tableName == ShippingProgram.ACCOUNTS && (invalidActiveCust || invalidActiveSite))  return new Object[1];
 		
+		//Build an SQL statement to retrieve the desired primary key list
 		String sql = "";
-		if(tableName == tableNames.CUSTOMERS)
-			sql = "select custName from customer;";			//Builds an SQL statement to get all custName values
-		else if(tableName == tableNames.SITES)
+		if(tableName == ShippingProgram.CUSTOMERS)
+			sql = "select custName from customer;";
+		else if(tableName == ShippingProgram.SITES)
 			sql = "select siteName from site where custName='" + activeCustomer + "';";
-		else if(tableName == tableNames.ACCOUNTS) 
+		else if(tableName == ShippingProgram.ACCOUNTS) 
 			sql = "select serviceName from accountnumber where custName='" + activeCustomer + "' AND siteName='" + activeSite + "';";
 		else System.out.println("Somehow the table name is incorrect.");
 		
@@ -94,14 +89,12 @@ public class DatabaseManager
 		return tableKeys.toArray();	//ComboBox can only accept arrays, not ALists
 	}
 	
-	//Method to get active selections
-	public String getActiveSelection(tableNames tableName)
+	public String getActiveSelection(int tableName)
 	{
 		return activeSelections.get(tableName);
 	}
 	
-	//Methods to set active selections
-	public void setActiveSelection(tableNames tableName, String selection)
+	public void setActiveSelection(int tableName, String selection)
 	{
 		activeSelections.put(tableName, selection);
 	}
@@ -121,7 +114,7 @@ public class DatabaseManager
 				+ abbreviation + "' , '" 
 				+ PPA + "');\n";
 		
-		addToInsertFile(insertQuery, 1);	//Passes the generated query to addToInsertFile
+		addToInsertFile(insertQuery, ShippingProgram.CUSTOMERS);	//Passes the generated query to addToInsertFile
 		
 		runUpdateQuery(insertQuery);
 	}
@@ -132,7 +125,7 @@ public class DatabaseManager
 	{
 		String insertQuery = "insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)"
 				+ "\n\tvalues('" 
-				+ activeSelections.get(tableNames.CUSTOMERS) + "', '"
+				+ activeSelections.get(ShippingProgram.CUSTOMERS) + "', '"
 				+ siteName + "', '"
 				+ street + "', '"
 				+ city + "', '"
@@ -140,7 +133,7 @@ public class DatabaseManager
 				+ country + "', '"
 				+ zip + "');";
 		
-		addToInsertFile(insertQuery, 2);
+		addToInsertFile(insertQuery, ShippingProgram.SITES);
 		
 		runUpdateQuery(insertQuery);
 	}
@@ -153,7 +146,8 @@ public class DatabaseManager
 	{
 		//The path of the file to be written to
 		//Selects 1 of 3 insert files based on the value of the second arg
-		String filepath = "sql/ShipmentProgramInsert-" + (fileSelection == 1 ? "Customer" : fileSelection == 2 ? "Site" : tableNames.ACCOUNTS) + ".sql";
+		String filepath = "sql/ShipmentProgramInsert-" + (fileSelection == ShippingProgram.CUSTOMERS 
+				? "Customer" : fileSelection == ShippingProgram.SITES ? "Site" : "Account") + ".sql";
 		
 		try {	//to point a FileWriter/PrintWriter combo at the desired SQL file
 			FileWriter fw = new FileWriter(new File(filepath), true); //Append to file
