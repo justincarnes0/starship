@@ -20,7 +20,7 @@ public class DatabaseManager
 	private static final String USERNAME = "shipping";
 	private static final String PASSWORD = "9146";
 	
-	private ShippingProgramGUI gui = null;	//Holds the current GUI instance
+	private ShippingProgramGUI gui = null;	//Holds the current GUI instance: ideally this will allow me to display console messages in the GUI later on
 	
 	private HashMap<Integer, ArrayList<String>> primaryKeys	= new HashMap<Integer, ArrayList<String>>();
 	private HashMap<Integer, String> activeSelections 		= new HashMap<Integer, String>();

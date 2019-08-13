@@ -17,12 +17,12 @@ public class ShippingProgram
 	{
 		//I believe this creates the program instance in a new thread
 		//From what I understand, this is preferable to doing it directly in the main method
-		EventQueue.invokeLater(new Runnable() 
+		/*EventQueue.invokeLater(new Runnable() 
 		{
 			public void run() 
-			{
+			{*/
 				ShippingProgramGUI GUI = new ShippingProgramGUI();
-			}
-		});
+			/*}
+		});*/
 	}
 }
