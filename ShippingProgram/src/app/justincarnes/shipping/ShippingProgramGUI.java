@@ -12,6 +12,8 @@ public class ShippingProgramGUI
 {
 	private DatabaseManager dbm;
 	private JFrame frame;
+	private JPanel contentPane;
+	private JPanel controlPanel;
 	private JPanel cardDeck;
 	private JPanel startPageCard;
 	private HashMap<Integer, JComboBox> comboBoxes = new HashMap<Integer, JComboBox>();
@@ -23,20 +25,52 @@ public class ShippingProgramGUI
 		
 		frame = new JFrame("Starfish Shipping");	
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
-		frame.setBounds(100, 100, 500, 300);		
-		frame.getContentPane().setLayout(new CardLayout());	
+		frame.setBounds(175, 1150, 500, 290);		
 		
-		//Will be using card layout to facilitate multiple pages
+		contentPane = (JPanel) frame.getContentPane();
+		contentPane.setLayout(new BorderLayout());	
+		
+		createCardDeck();
+		createControlPanel();
+		createFirstPage();
+		
+		frame.setVisible(true);
+	}
+	
+	private void createCardDeck()
+	{
 		cardDeck = new JPanel();
-		cardDeck.setLayout(new CardLayout(0, 0));
+		cardDeck.setLayout(new CardLayout(50, 30));
+		cardDeck.setBorder(new LineBorder(Color.GRAY, 1, true));
+		contentPane.add(cardDeck, BorderLayout.NORTH);
+	}
+	
+	private void createFirstPage()
+	{
 		startPageCard = new JPanel();
-		startPageCard.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
-		cardDeck.add(startPageCard, "name_1294578395573185");
-		frame.getContentPane().add(cardDeck);
+		startPageCard.setLayout(new GridLayout(3, 1, 0, 40));
+		//startPageCard.setBorder(new TitledBorder("Start Card"));
+		cardDeck.add(startPageCard);
 		
 		createComboBox(ShippingProgram.CUSTOMERS);
-		frame.setVisible(true);
+		createComboBox(ShippingProgram.SITES);
+		createComboBox(ShippingProgram.ACCOUNTS);
+		
+		comboBoxes.get(ShippingProgram.SITES).setEnabled(false);
+		comboBoxes.get(ShippingProgram.ACCOUNTS).setEnabled(false);	
+		
+		cardDeck.add(startPageCard, "name_1294578395573185");
+	}
+	
+	private void createControlPanel()
+	{
+		controlPanel = new JPanel();
+		controlPanel.setLayout(new FlowLayout());
+		JButton previous = new JButton("< Previous");
+		JButton next = new JButton("Next >");
+		controlPanel.add(previous);
+		controlPanel.add(next);
+		contentPane.add(controlPanel, BorderLayout.SOUTH);
 	}
 	
 	//A method to create a ComboBox preceded by a label
@@ -88,6 +122,7 @@ public class ShippingProgramGUI
 		for(Object x : siteList)
 			currentBox.addItem(x);
 		
+		currentBox.setEnabled(true);
 		currentBox.setSelectedIndex(0);	//Set to "--Select one--" when repopulation is finished
 		cbListener.toggleActive();		//Turn the listener back on so the box will function properly
 	}
@@ -233,12 +268,13 @@ public class ShippingProgramGUI
 					
 					//Repopulate the next box for customers and sites to match new selections
 					if(tableName < ShippingProgram.ACCOUNTS)
-						if(comboBoxes.get(tableName + 1) != null)
-							repopComboBox(tableName + 1);
-						else createComboBox(tableName + 1);		
+					{
+						if(tableName < ShippingProgram.SITES)
+							comboBoxes.get(tableName + 2).setEnabled(false);
+						repopComboBox(tableName + 1);
+					}
 				}	
-			}
-			
+			}	
 		}
 	}
 }

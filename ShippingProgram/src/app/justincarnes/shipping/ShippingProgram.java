@@ -1,6 +1,7 @@
 package app.justincarnes.shipping;
 
-import java.awt.EventQueue;
+import java.awt.*;
+import javax.swing.*;
 
 public class ShippingProgram 
 {
@@ -17,12 +18,21 @@ public class ShippingProgram
 	{
 		//I believe this creates the program instance in a new thread
 		//From what I understand, this is preferable to doing it directly in the main method
-		/*EventQueue.invokeLater(new Runnable() 
+		EventQueue.invokeLater(new Runnable() 
 		{
 			public void run() 
-			{*/
-				ShippingProgramGUI GUI = new ShippingProgramGUI();
-			/*}
-		});*/
+			{
+				try {
+					UIManager.setLookAndFeel(
+		            UIManager.getSystemLookAndFeelClassName());
+				} 
+				catch (UnsupportedLookAndFeelException e) { System.out.println("Unsupported look & feel."); }
+				catch (ClassNotFoundException e)		  { System.out.println("Class not found."); }
+				catch (InstantiationException e)		  { System.out.println("Error instantiating."); }
+				catch (IllegalAccessException e) 		  { System.out.println("Illegal access."); }
+				
+				new ShippingProgramGUI();
+			}
+		});
 	}
 }

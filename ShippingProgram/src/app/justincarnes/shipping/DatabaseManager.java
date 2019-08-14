@@ -57,6 +57,9 @@ public class DatabaseManager
 		ArrayList<String> tableKeys = primaryKeys.get(tableName);
 		String activeCustomer 		= activeSelections.get(ShippingProgram.CUSTOMERS);
 		String activeSite 			= activeSelections.get(ShippingProgram.SITES);
+		boolean invalidActiveCust   = activeCustomer.equals(ShippingProgram.SELECT_ONE) || activeCustomer.equals("");
+		boolean invalidActiveSite   = activeSite.equals(ShippingProgram.SELECT_ONE) 	|| activeSite.equals("");
+		
 		//Holds the name of the field to be retrieved for the active table
 		String fieldName = ((tableName == ShippingProgram.CUSTOMERS) 
 				? "custName" : (tableName == ShippingProgram.SITES ? "siteName" : "serviceName"));
@@ -67,25 +70,22 @@ public class DatabaseManager
 		tableKeys.add(ShippingProgram.SELECT_ONE);	//Gives the combobox a default value, will be an invalid selection
 		tableKeys.add(ShippingProgram.ADD_NEW);		//If selected, will allow the user to add a new entry
 		
-		boolean invalidActiveCust = activeCustomer.equals(ShippingProgram.SELECT_ONE) || activeCustomer.equals("");
-		boolean invalidActiveSite = activeSite.equals(ShippingProgram.SELECT_ONE) || activeSite.equals("");
+		//Skip selection & return empty lists if an invalid selection makes it here
+		if(!(tableName == ShippingProgram.SITES 	&&  invalidActiveCust)
+		&& !(tableName == ShippingProgram.ACCOUNTS  && (invalidActiveCust || invalidActiveSite))) 
+		{
+			//Build an SQL statement to retrieve the desired primary key list
+			String sql = "";
+			if(tableName == ShippingProgram.CUSTOMERS)
+				sql = "select custName from customer;";
+			else if(tableName == ShippingProgram.SITES)
+				sql = "select siteName from site where custName='" + activeCustomer + "';";
+			else if(tableName == ShippingProgram.ACCOUNTS) 
+				sql = "select serviceName from accountnumber where custName='" + activeCustomer + "' AND siteName='" + activeSite + "';";
+			else System.out.println("Somehow the table name is incorrect.");
 		
-		//Return empty lists if somehow an invalid selection makes it here
-		if(tableName == ShippingProgram.SITES 	 &&  invalidActiveCust) 					   return new Object[1];
-		if(tableName == ShippingProgram.ACCOUNTS && (invalidActiveCust || invalidActiveSite))  return new Object[1];
-		
-		//Build an SQL statement to retrieve the desired primary key list
-		String sql = "";
-		if(tableName == ShippingProgram.CUSTOMERS)
-			sql = "select custName from customer;";
-		else if(tableName == ShippingProgram.SITES)
-			sql = "select siteName from site where custName='" + activeCustomer + "';";
-		else if(tableName == ShippingProgram.ACCOUNTS) 
-			sql = "select serviceName from accountnumber where custName='" + activeCustomer + "' AND siteName='" + activeSite + "';";
-		else System.out.println("Somehow the table name is incorrect.");
-		
-		runSelectQuery(tableKeys, fieldName, sql);
-				
+			runSelectQuery(tableKeys, fieldName, sql);
+		}		
 		return tableKeys.toArray();	//ComboBox can only accept arrays, not ALists
 	}
 	
