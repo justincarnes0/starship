@@ -20,7 +20,7 @@ public class DatabaseManager
 	private static final String USERNAME = "shipping";
 	private static final String PASSWORD = "9146";
 	
-	private ShippingProgramGUI gui = null;	//Holds the current GUI instance: ideally this will allow me to display console messages in the GUI later on
+	private ShippingProgramGUI gui;	//Holds the current GUI instance: ideally this will allow me to display console messages in the GUI later on
 	
 	private HashMap<Integer, ArrayList<String>> primaryKeys	= new HashMap<Integer, ArrayList<String>>();
 	private HashMap<Integer, String> activeSelections 		= new HashMap<Integer, String>();
@@ -35,11 +35,11 @@ public class DatabaseManager
 		gui = SPGui;
 		
 		primaryKeys.put(ShippingProgram.CUSTOMERS, new ArrayList<String>());
-		primaryKeys.put(ShippingProgram.SITES, 	 new ArrayList<String>());
+		primaryKeys.put(ShippingProgram.SITES, 	   new ArrayList<String>());
 		primaryKeys.put(ShippingProgram.ACCOUNTS,  new ArrayList<String>());
 		
 		activeSelections.put(ShippingProgram.CUSTOMERS, "");
-		activeSelections.put(ShippingProgram.SITES, 	  "");
+		activeSelections.put(ShippingProgram.SITES, 	"");
 		activeSelections.put(ShippingProgram.ACCOUNTS,  "");
 		
 		try { //to register the driver
@@ -110,31 +110,45 @@ public class DatabaseManager
 	{
 		//Build an insert statement based on the given info
 		String insertQuery = "insert into customer(custName, abbreviation, PPA)\n\tvalues('" 
-				+ custName + "', '" 
-				+ abbreviation + "' , '" 
-				+ PPA + "');\n";
+				+ custName 	   + "', '" 
+				+ abbreviation + "', '" 
+				+ PPA 		   + "');";
 		
 		addToInsertFile(insertQuery, ShippingProgram.CUSTOMERS);	//Passes the generated query to addToInsertFile
-		
 		runUpdateQuery(insertQuery);
 	}
 	
 	//A method to add a new, user-defined site to the database for the selected customer
-	//Accepts all necessary fields to create a site except custName- uses globally stored activeCustomer instead
+	//Accepts all necessary fields to create a site except custName- uses globally stored active customer instead
 	public void addNewSite(String siteName, String street, String city, String state, String country, String zip)
 	{
 		String insertQuery = "insert into site(custName, siteName, streetAddress, cityAddress, stateAddress, countryAddress, zipAddress)"
 				+ "\n\tvalues('" 
 				+ activeSelections.get(ShippingProgram.CUSTOMERS) + "', '"
 				+ siteName + "', '"
-				+ street + "', '"
-				+ city + "', '"
-				+ state + "', '"
-				+ country + "', '"
-				+ zip + "');";
+				+ street   + "', '"
+				+ city 	   + "', '"
+				+ state    + "', '"
+				+ country  + "', '"
+				+ zip 	   + "');";
 		
 		addToInsertFile(insertQuery, ShippingProgram.SITES);
+		runUpdateQuery(insertQuery);
+	}
+	
+	//A method to add a new, user-defined account to the database for the selected customer and site
+	//Accepts all necessary fields to create an account except custName and siteName- uses globally store active values instead
+	public void addNewAccount(String serviceName, String accountNum, String billingZip)
+	{
+		String insertQuery = "insert into AccountNumber(custName, siteName, serviceName, accountNum, billingZip)"
+				+ "\n\tvalues('"
+				+ activeSelections.get(ShippingProgram.CUSTOMERS) + "', '"
+				+ activeSelections.get(ShippingProgram.SITES) 	  + "', '"
+				+ serviceName + "', '"
+				+ accountNum  + "', '"
+				+ billingZip  + "');";
 		
+		addToInsertFile(insertQuery, ShippingProgram.ACCOUNTS);
 		runUpdateQuery(insertQuery);
 	}
 	
@@ -147,17 +161,16 @@ public class DatabaseManager
 		//The path of the file to be written to
 		//Selects 1 of 3 insert files based on the value of the second arg
 		String filepath = "sql/ShipmentProgramInsert-" + (fileSelection == ShippingProgram.CUSTOMERS 
-				? "Customer" : fileSelection == ShippingProgram.SITES ? "Site" : "Account") + ".sql";
+				? "Customer" : fileSelection == ShippingProgram.SITES ? "Site" : "Accounts") + ".sql";
 		
 		try {	//to point a FileWriter/PrintWriter combo at the desired SQL file
-			FileWriter fw = new FileWriter(new File(filepath), true); //Append to file
+			FileWriter  fw = new FileWriter(new File(filepath), true); //Append to file
 			PrintWriter pw = new PrintWriter(fw);
 			pw.println(insertQuery);	//Add to the file
 			pw.close();					//Cleanup
 			fw.close();
-		} catch (FileNotFoundException e) { e.printStackTrace(); }	//If the file isn't found
-		  catch (IOException ie) { ie.printStackTrace(); }			//If the file can't be written to
-		
+		} catch (FileNotFoundException fe) { fe.printStackTrace(); }	//If the file isn't found
+		  catch (IOException ie) 		   { ie.printStackTrace(); }	//If the file can't be written to
 	}
 	
 	////////////////////////////
@@ -168,7 +181,7 @@ public class DatabaseManager
 	private void runUpdateQuery(String sql)
 	{
 		Connection conn = null;
-		Statement stmt = null;
+		Statement  stmt = null;
 		
 		try { //to connect to database, execute the generated statement, and close the connection
 			System.out.println("Connecting to database...");
@@ -193,7 +206,7 @@ public class DatabaseManager
 	private void runSelectQuery(ArrayList<String> tableKeys, String fieldName, String sql)
 	{
 		Connection conn = null;		//Will represent a connection with the database
-		Statement stmt  = null;		//An object that will execute queries in the database
+		Statement  stmt = null;		//An object that will execute queries in the database
 				
 		try {
 			//Follows URL to database, provides credentials for access

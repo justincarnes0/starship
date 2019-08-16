@@ -15,7 +15,10 @@ public class ShippingProgramGUI
 	private JPanel contentPane;
 	private JPanel controlPanel;
 	private JPanel cardDeck;
-	private JPanel startPageCard;
+	private CardLayout cl;
+	private JPanel currentCard;
+	private ArrayList<JPanel> cards 	= new ArrayList<JPanel>();
+	private ArrayList<String> cardNames = new ArrayList<String>();
 	private HashMap<Integer, JComboBox> comboBoxes = new HashMap<Integer, JComboBox>();
 
 	//Creates the application frame and launches the start page
@@ -25,14 +28,19 @@ public class ShippingProgramGUI
 		
 		frame = new JFrame("Starfish Shipping");	
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
-		frame.setBounds(175, 1150, 500, 290);		
+		frame.setBounds(175, 1150, 500, 280);		
 		
 		contentPane = (JPanel) frame.getContentPane();
 		contentPane.setLayout(new BorderLayout());	
 		
 		createCardDeck();
+		cl = (CardLayout) cardDeck.getLayout();
+		
 		createControlPanel();
 		createFirstPage();
+		createSecondPage();
+		
+		cl.show(cardDeck, cardNames.get(0));
 		
 		frame.setVisible(true);
 	}
@@ -47,29 +55,88 @@ public class ShippingProgramGUI
 	
 	private void createFirstPage()
 	{
-		startPageCard = new JPanel();
+		cards.add(new JPanel());
+		cardNames.add("Page 1");
+		currentCard = cards.get(0);
+		JPanel startPageCard = cards.get(0);
 		startPageCard.setLayout(new GridLayout(3, 1, 0, 40));
 		//startPageCard.setBorder(new TitledBorder("Start Card"));
-		cardDeck.add(startPageCard);
+		
+		cardDeck.add(startPageCard, cardNames.get(0));
 		
 		createComboBox(ShippingProgram.CUSTOMERS);
 		createComboBox(ShippingProgram.SITES);
 		createComboBox(ShippingProgram.ACCOUNTS);
 		
 		comboBoxes.get(ShippingProgram.SITES).setEnabled(false);
-		comboBoxes.get(ShippingProgram.ACCOUNTS).setEnabled(false);	
+		comboBoxes.get(ShippingProgram.ACCOUNTS).setEnabled(false);
+	}
+	
+	private void createSecondPage()
+	{
+		cards.add(new JPanel());
+		cardNames.add("Page 2");
+		JPanel secondPageCard = cards.get(1);
+		secondPageCard.setLayout(new GridLayout(3, 1, 0, 40));
 		
-		cardDeck.add(startPageCard, "name_1294578395573185");
+		cardDeck.add(secondPageCard, cardNames.get(1));
+		
+		JLabel selectedCust = new JLabel("This is a test");
+		JLabel selectedSite = new JLabel("Originally these names were accurate");
+		JLabel selectedAcct = new JLabel("Then I realized that there was a logical error so here we are");
+		
+		secondPageCard.add(selectedCust);
+		secondPageCard.add(selectedSite);
+		secondPageCard.add(selectedAcct);
 	}
 	
 	private void createControlPanel()
 	{
 		controlPanel = new JPanel();
 		controlPanel.setLayout(new FlowLayout());
+		
 		JButton previous = new JButton("< Previous");
-		JButton next = new JButton("Next >");
+		JButton next 	 = new JButton("Next >");
+		
+		previous.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				int cardIndex = cards.indexOf(currentCard);
+				if(cardIndex > 0)
+				{
+					currentCard = cards.get(cardIndex - 1);
+					cl.show(cardDeck, cardNames.get(cardIndex - 1));
+					if(cardIndex - 1 == 0)
+						previous.setEnabled(false);
+					if(cardIndex - 1 == cards.size() - 2)
+						next.setEnabled(true);
+				}
+			}
+		});
+		
+		next.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				int cardIndex = cards.indexOf(currentCard);
+				if(cardIndex < cards.size() - 1)
+				{
+					currentCard = cards.get(cardIndex + 1);
+					cl.show(cardDeck, cardNames.get(cardIndex + 1));
+					if(cardIndex + 1 == cards.size() - 1)
+						next.setEnabled(false);
+					if(cardIndex + 1 == 1)
+						previous.setEnabled(true);
+				}
+			}
+		});
+		
 		controlPanel.add(previous);
 		controlPanel.add(next);
+		
+		previous.setEnabled(false);
+		
 		contentPane.add(controlPanel, BorderLayout.SOUTH);
 	}
 	
@@ -94,17 +161,13 @@ public class ShippingProgramGUI
 				comboBoxLabel.setText("Something's wrong here");
 		}
 		
-		startPageCard.add(comboBoxLabel);
-		
 		//Create the box, add it to the master list and the pane, and attach a listener to it
 		comboBoxes.put(tableName, new JComboBox(dbm.getPrimaryKeyList(tableName)));
 		JComboBox currentBox = comboBoxes.get(tableName);
-		startPageCard.add(currentBox);
 		currentBox.addItemListener(new ComboBoxListener(tableName));	//See below for the internal class ComboBoxListener
 		
-		//These two method calls are important for getting the boxes to display properly after updating
-		startPageCard.revalidate();	
-		startPageCard.repaint();
+		currentCard.add(comboBoxLabel);
+		currentCard.add(currentBox);
 	}
 	
 	//A method to repopulate ComboBoxes after the database has been updated
@@ -141,39 +204,39 @@ public class ShippingProgramGUI
 		switch(tableName)
 		{
 			case ShippingProgram.CUSTOMERS:
-				JTextField custName = new JTextField();
+				JTextField custName 	= new JTextField();
 				JTextField abbreviation = new JTextField();
 			
 				String[] choices = {ShippingProgram.SELECT_ONE, "Y", "N"}; //Making this one a choice to ensure an invalid entry isn't made
-				JComboBox PPA = new JComboBox(choices);
+				JComboBox PPA 	 = new JComboBox(choices);
 			
-				Object[] promptC = { "Customer name: ", custName, "Customer abbreviation: ", abbreviation, "Prepay & Add shipping?", PPA };
+				Object[] promptC = {"Customer name: ", custName, "Customer abbreviation: ", abbreviation, "Prepay & Add shipping?", PPA};
 				
 				//This will reflect whether or not the user wants to confirm the new entry or cancel
-				int optionC = JOptionPane.showConfirmDialog(startPageCard, promptC, "New customer", JOptionPane.OK_CANCEL_OPTION);
+				int optionC = JOptionPane.showConfirmDialog(currentCard, promptC, "New customer", JOptionPane.OK_CANCEL_OPTION);
 			
 				//Extract user input
 				String custNameInput = custName.getText();
-				String abbrInput = abbreviation.getText();
-				String PPAChoice = (String) PPA.getSelectedItem();
+				String abbrInput 	 = abbreviation.getText();
+				String PPAChoice 	 = (String) PPA.getSelectedItem();
 			
 				//Things to check if the entry is confirmed: if canceled, nothing needs to be done
 				//Eventually I'd like to be able to keep the prompt open, just shuts the window for now
 				if(optionC == JOptionPane.OK_OPTION)
 				{
-					if(custNameInput == "" || abbrInput == "")
+					if(custNameInput.equals("") || abbrInput.equals(""))
 					{
-						JOptionPane.showMessageDialog(startPageCard, "Fields cannot be left blank, please try again.");
+						JOptionPane.showMessageDialog(currentCard, "Fields cannot be left blank, please try again.");
 						optionC = JOptionPane.CANCEL_OPTION; 
 					}
 					else if(PPAChoice == ShippingProgram.SELECT_ONE)
 					{
-						JOptionPane.showMessageDialog(startPageCard, "You must select an option for 'Prepay & add shipping?'.");
+						JOptionPane.showMessageDialog(currentCard, "You must select an option for 'Prepay & add shipping?'.");
 						optionC = JOptionPane.CANCEL_OPTION;
 					}
 					else if(CBModelItems.contains(custNameInput))
 					{
-						JOptionPane.showMessageDialog(startPageCard, "This customer already exists in the database.");
+						JOptionPane.showMessageDialog(currentCard, "This customer already exists in the database.");
 						optionC = JOptionPane.CANCEL_OPTION;
 					}
 				
@@ -200,7 +263,7 @@ public class ShippingProgramGUI
 					  "Country: ", 										 		  countryAddress,
 					  "ZIP/Postal Code (Leave blank if not applicable): ", 		  zipAddress };
 				
-				int optionS = JOptionPane.showConfirmDialog(startPageCard, promptS, "New site", JOptionPane.OK_CANCEL_OPTION);
+				int optionS = JOptionPane.showConfirmDialog(currentCard, promptS, "New site", JOptionPane.OK_CANCEL_OPTION);
 				
 				String siteNameInput  = siteName.getText();
 				
@@ -215,20 +278,52 @@ public class ShippingProgramGUI
 				
 				if(optionS == JOptionPane.OK_OPTION)
 				{
-					if(siteNameInput == "" || streetAddInput == "" || cityInput == "" || countryInput == "")
+					if(siteNameInput.equals("") || streetAddInput.equals("") || cityInput.equals("") || countryInput.equals(""))
 					{
-						JOptionPane.showMessageDialog(startPageCard, "Fields cannot be left blank unless specifically stated, please try again.");
+						JOptionPane.showMessageDialog(currentCard, "Fields cannot be left blank unless specifically stated, please try again.");
 						optionS = JOptionPane.CANCEL_OPTION;
 					}
 					else if(CBModelItems.contains(siteNameInput))
 					{
-						JOptionPane.showMessageDialog(startPageCard, "This site already exists in the database.");
+						JOptionPane.showMessageDialog(currentCard, "This site already exists in the database.");
 						optionS = JOptionPane.CANCEL_OPTION;
 					}
-					
 					else dbm.addNewSite(siteNameInput, streetAddInput, cityInput, stateInput, countryInput, zipInput);
 				}
 				break;	
+				
+			case ShippingProgram.ACCOUNTS:
+				JTextField serviceName = new JTextField();
+				JTextField accountNum  = new JTextField();
+				JTextField billingZip  = new JTextField();
+				
+				Object[] promptA =  {"Service name: ", serviceName, "Account number: ", accountNum, "Billing ZIP: ", billingZip};
+				int optionA = JOptionPane.showConfirmDialog(currentCard, promptA, "New account", JOptionPane.OK_CANCEL_OPTION);
+				
+				String serviceNameInput = serviceName.getText();
+				String accountNumInput  = accountNum.getText();
+				String billingZipInput  = billingZip.getText();
+				
+				if(optionA == JOptionPane.OK_OPTION)
+				{
+					if(serviceNameInput.equals("") || accountNumInput.equals("") || billingZipInput.equals(""))
+					{
+						JOptionPane.showMessageDialog(currentCard, "Fields cannot be left blank, please try again.");
+						optionA = JOptionPane.CANCEL_OPTION;
+					}
+					else if(!(serviceNameInput.equals("Fedex") || serviceNameInput.equals("UPS") || serviceNameInput.equals("DHL")))
+					{
+						JOptionPane.showMessageDialog(currentCard, "Service name can only be \"Fedex\", \"UPS\", or \"DHL\". Please try again.");
+						optionA = JOptionPane.CANCEL_OPTION;
+					}
+					else if(CBModelItems.contains(serviceNameInput))
+					{
+						JOptionPane.showMessageDialog(currentCard, "An account number for this service is already stored.");
+						optionA = JOptionPane.CANCEL_OPTION;
+					}
+					else dbm.addNewAccount(serviceNameInput, accountNumInput, billingZipInput);
+				}
+				break;
 			
 			default:
 				System.out.println("Completely illogical result");
@@ -241,12 +336,12 @@ public class ShippingProgramGUI
 	class ComboBoxListener implements ItemListener
 	{
 		private boolean active;
-		private int tableName;
+		private int 	tableName;
 		
 		public ComboBoxListener(int tn)
 		{
-			active = true;
 			tableName = tn;
+			active 	  = true;
 		}
 		
 		public void toggleActive()
@@ -254,6 +349,7 @@ public class ShippingProgramGUI
 			active = !active;
 		}
 		
+		//Code that triggers whenever the state of a comboBox is changed
 		public void itemStateChanged(ItemEvent selectionEvent) 
 		{
 			if(active)
