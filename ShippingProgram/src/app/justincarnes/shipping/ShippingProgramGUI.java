@@ -11,12 +11,13 @@ import javax.swing.border.*;
 public class ShippingProgramGUI
 {
 	private DatabaseManager dbm;
+	
 	private JFrame frame;
 	private JPanel contentPane;
 	private JPanel controlPanel;
 	private JPanel cardDeck;
-	private CardLayout cl;
 	private JPanel currentCard;
+	private CardLayout cl;
 	private ArrayList<JPanel> cards 	= new ArrayList<JPanel>();
 	private ArrayList<String> cardNames = new ArrayList<String>();
 	private HashMap<Integer, JComboBox> comboBoxes = new HashMap<Integer, JComboBox>();
@@ -45,49 +46,15 @@ public class ShippingProgramGUI
 		frame.setVisible(true);
 	}
 	
+	/////////////////
+	//Pre-page code//
+	/////////////////
 	private void createCardDeck()
 	{
 		cardDeck = new JPanel();
 		cardDeck.setLayout(new CardLayout(50, 30));
 		cardDeck.setBorder(new LineBorder(Color.GRAY, 1, true));
 		contentPane.add(cardDeck, BorderLayout.NORTH);
-	}
-	
-	private void createFirstPage()
-	{
-		cards.add(new JPanel());
-		cardNames.add("Page 1");
-		currentCard = cards.get(0);
-		JPanel startPageCard = cards.get(0);
-		startPageCard.setLayout(new GridLayout(3, 1, 0, 40));
-		//startPageCard.setBorder(new TitledBorder("Start Card"));
-		
-		cardDeck.add(startPageCard, cardNames.get(0));
-		
-		createComboBox(ShippingProgram.CUSTOMERS);
-		createComboBox(ShippingProgram.SITES);
-		createComboBox(ShippingProgram.ACCOUNTS);
-		
-		comboBoxes.get(ShippingProgram.SITES).setEnabled(false);
-		comboBoxes.get(ShippingProgram.ACCOUNTS).setEnabled(false);
-	}
-	
-	private void createSecondPage()
-	{
-		cards.add(new JPanel());
-		cardNames.add("Page 2");
-		JPanel secondPageCard = cards.get(1);
-		secondPageCard.setLayout(new GridLayout(3, 1, 0, 40));
-		
-		cardDeck.add(secondPageCard, cardNames.get(1));
-		
-		JLabel selectedCust = new JLabel("This is a test");
-		JLabel selectedSite = new JLabel("Originally these names were accurate");
-		JLabel selectedAcct = new JLabel("Then I realized that there was a logical error so here we are");
-		
-		secondPageCard.add(selectedCust);
-		secondPageCard.add(selectedSite);
-		secondPageCard.add(selectedAcct);
 	}
 	
 	private void createControlPanel()
@@ -138,6 +105,26 @@ public class ShippingProgramGUI
 		previous.setEnabled(false);
 		
 		contentPane.add(controlPanel, BorderLayout.SOUTH);
+	}
+	
+	///////////////////
+	//First page code//
+	///////////////////
+	private void createFirstPage()
+	{
+		cards.add(new JPanel());
+		cardNames.add("Page 1");
+		currentCard = cards.get(0);
+		JPanel startPageCard = cards.get(0);
+		startPageCard.setLayout(new GridLayout(3, 1, 0, 40));
+		cardDeck.add(startPageCard, cardNames.get(0));
+		
+		createComboBox(ShippingProgram.CUSTOMERS);
+		createComboBox(ShippingProgram.SITES);
+		createComboBox(ShippingProgram.ACCOUNTS);
+		
+		comboBoxes.get(ShippingProgram.SITES).setEnabled(false);
+		comboBoxes.get(ShippingProgram.ACCOUNTS).setEnabled(false);
 	}
 	
 	//A method to create a ComboBox preceded by a label
@@ -331,7 +318,6 @@ public class ShippingProgramGUI
 		repopComboBox(tableName);
 	}
 	
-	
 	//A toggleable ItemListener to be used for ComboBoxes
 	class ComboBoxListener implements ItemListener
 	{
@@ -372,6 +358,27 @@ public class ShippingProgramGUI
 				}	
 			}	
 		}
+	}
+	
+	////////////////////
+	//Second page code//
+	////////////////////
+	private void createSecondPage()
+	{
+		cards.add(new JPanel());
+		cardNames.add("Page 2");
+		JPanel secondPageCard = cards.get(1);
+		secondPageCard.setLayout(new GridLayout(3, 1, 0, 40));
+		
+		cardDeck.add(secondPageCard, cardNames.get(1));
+		
+		JLabel selectedCust = new JLabel("This is a test");
+		JLabel selectedSite = new JLabel("Originally these names were accurate");
+		JLabel selectedAcct = new JLabel("Then I realized that there was a logical error so here we are");
+		
+		secondPageCard.add(selectedCust);
+		secondPageCard.add(selectedSite);
+		secondPageCard.add(selectedAcct);
 	}
 }
 

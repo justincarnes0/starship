@@ -24,6 +24,7 @@ public class DatabaseManager
 	
 	private HashMap<Integer, ArrayList<String>> primaryKeys	= new HashMap<Integer, ArrayList<String>>();
 	private HashMap<Integer, String> activeSelections 		= new HashMap<Integer, String>();
+	private HashMap<Integer, ArrayList<String>> activeData  = new HashMap<Integer, ArrayList<String>>();
 	
 	///////////////////////////////////////////////
 	//Constructor for the database manager object//
@@ -84,7 +85,7 @@ public class DatabaseManager
 				sql = "select serviceName from accountnumber where custName='" + activeCustomer + "' AND siteName='" + activeSite + "';";
 			else System.out.println("Somehow the table name is incorrect.");
 		
-			runSelectQuery(tableKeys, fieldName, sql);
+			runSelectQuery(tableKeys, sql, fieldName);
 		}		
 		return tableKeys.toArray();	//ComboBox can only accept arrays, not ALists
 	}
@@ -97,6 +98,12 @@ public class DatabaseManager
 	public void setActiveSelection(int tableName, String selection)
 	{
 		activeSelections.put(tableName, selection);
+	}
+	
+	public ArrayList<String> getCompleteData(int tableName)
+	{
+		fetchCompleteData();
+		return activeData.get(tableName);
 	}
 	
 	
@@ -173,6 +180,16 @@ public class DatabaseManager
 		  catch (IOException ie) 		   { ie.printStackTrace(); }	//If the file can't be written to
 	}
 	
+	///////////////////////////
+	//Updating database items//
+	///////////////////////////
+	
+	public void updateSelectedCustomer(String custName, String abbreviation, String PPA)
+	{
+		
+	}
+	
+	
 	////////////////////////////
 	//General helper functions//
 	////////////////////////////
@@ -203,7 +220,8 @@ public class DatabaseManager
 	
 	//A method to run a selection query and populate an ArrayList with the results
 	//Accepts the AList to be populated, the name of the field for that specific table, and the sql query to be run
-	private void runSelectQuery(ArrayList<String> tableKeys, String fieldName, String sql)
+	//This version is to be used when you want to fill an ArrayList with all of the values for one specific entry
+	private void runSelectQuery(ArrayList<String> aList, String sql)
 	{
 		Connection conn = null;		//Will represent a connection with the database
 		Statement  stmt = null;		//An object that will execute queries in the database
@@ -215,14 +233,47 @@ public class DatabaseManager
 					
 			stmt = conn.createStatement();
 			
-			ResultSet customers = stmt.executeQuery(sql);		//Takes the above query and executes it in the DB
+			ResultSet rs = stmt.executeQuery(sql);		//Takes the above query and executes it in the DB
+			ResultSetMetaData rsData = rs.getMetaData();//Provides us extra info about the result set
+			int numCols = rsData.getColumnCount();
+			
+			for(int i = 0; i < numCols; i++)
+				aList.add(rs.getString(i));
+			
+			conn.close(); 	//Closes all database resources: these are not local so they will not be destroyed by garbage collection
+			stmt.close();	//Connections, statements, and result sets are representations of database objects, and are thus held in the DB
+			rs.close();		//If we don't close after opening, they will stay open in the DB indefinitely even after the Java variables are gone
 					
-			//Iterates through result set and adds all primary key values to the current AList
-			while(customers.next()) tableKeys.add(customers.getString(fieldName));
+		} catch(SQLException se) { se.printStackTrace(); }		//If there is some error with the SQL query
+				
+		finally {	//If an exception is thrown and nothing happens, we must still close the DB resources
+			try { if(conn != null) 	conn.close(); } catch(SQLException se)  { se.printStackTrace(); }
+			try { if(stmt != null)  stmt.close(); } catch(SQLException se2) {}
+			System.out.println("DB connection terminated.");
+		}
+	}
+	
+	//This version is to be used when you want to fill an ArrayList with the values of one specific field
+	private void runSelectQuery(ArrayList<String> aList, String sql, String fieldName)
+	{
+		Connection conn = null;		//Will represent a connection with the database
+		Statement  stmt = null;		//An object that will execute queries in the database
+				
+		try {
+			//Follows URL to database, provides credentials for access
+			System.out.println("Connecting to database...");
+			conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);		
 					
-			conn.close(); 		//Closes all database resources: these are not local so they will not be destroyed by garbage collection
-			stmt.close();		//Connections, statements, and result sets are representations of database objects, and are thus held in the DB
-			customers.close();	//If we don't close after opening, they will stay open in the DB indefinitely even after the Java variables are gone
+			stmt = conn.createStatement();
+			
+			ResultSet rs = stmt.executeQuery(sql);		//Takes the above query and executes it in the DB
+					
+			//Iterates through result set and adds all values in the desired field to the current AList
+			while(rs.next()) aList.add(rs.getString(fieldName));
+					
+			conn.close();
+			stmt.close();
+			rs.close();	
 					
 		} catch(SQLException se) { se.printStackTrace(); }		//If there is some error with the SQL query
 				
@@ -233,5 +284,37 @@ public class DatabaseManager
 		}
 	}
 
-
+	//Fetches all stored data for the given active selections
+	private void fetchCompleteData()
+	{
+		String activeCust = activeSelections.get(ShippingProgram.CUSTOMERS);
+		String activeSite = activeSelections.get(ShippingProgram.SITES);
+		String activeAcct = activeSelections.get(ShippingProgram.ACCOUNTS);
+		
+		for(int i = ShippingProgram.CUSTOMERS; i <= ShippingProgram.ACCOUNTS; i++)
+		{
+			if(activeData.containsKey(i)) 
+				activeData.get(i).clear();
+			else activeData.put(i, new ArrayList<String>());
+			
+			String sql = "select * from ";
+			
+			switch(i)
+			{
+				case ShippingProgram.CUSTOMERS:
+					sql += "customer where custName=" + activeCust + ";";
+					break;
+				case ShippingProgram.SITES:
+					sql += "site where custName=" + activeCust + " AND siteName=" + activeSite + ";";
+					break;
+				case ShippingProgram.ACCOUNTS:
+					sql += "accountnumber where custName=" + activeCust + " AND siteName=" + activeSite + " AND serviceName=" + activeAcct + ";";
+					break;
+				default:
+					sql += "*;";
+			}
+			
+			runSelectQuery(activeData.get(i), sql);
+		}
+	}
 }
