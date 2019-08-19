@@ -10,4 +10,14 @@ public class Recipient
 	{
 		data = new HashMap<String, String>();
 	}
+	
+	public void setField(String fieldName, String val)
+	{
+		data.put(fieldName, val);
+	}
+	
+	public String getField(String fieldName)
+	{
+		return data.get(fieldName);
+	}
 }
