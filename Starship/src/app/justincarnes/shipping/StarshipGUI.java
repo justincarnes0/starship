@@ -29,7 +29,7 @@ public class StarshipGUI
 		
 		frame = new JFrame("Starship");	
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
-		frame.setBounds(175, 1150, 500, 280);		
+		frame.setBounds(175, 175, 500, 280);		
 		
 		contentPane = (JPanel) frame.getContentPane();
 		contentPane.setLayout(new BorderLayout());	
@@ -96,6 +96,7 @@ public class StarshipGUI
 					if(cardIndex + 1 == 1)
 						previous.setEnabled(true);
 				}
+				dbm.fetchCompleteData();
 			}
 		});
 		

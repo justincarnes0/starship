@@ -4,8 +4,6 @@ import java.util.*;
 
 public class Recipient 
 {
-	private HashMap<String, String> data;
-	
 	private String custName;
 	private String abbreviation;
 	private boolean PPA;
@@ -22,18 +20,20 @@ public class Recipient
 	private String acctNumber;
 	private String billingZip;
 	
-	public Recipient()
+	public Recipient(ArrayList<String> custVals, ArrayList<String> siteVals, ArrayList<String> acctVals)
 	{
-		data = new HashMap<String, String>();
+		setCustValues(custVals);
 	}
 	
-	public void setField(String fieldName, String val)
+	private void setCustValues(ArrayList<String> vals)
 	{
-		data.put(fieldName, val);
+		custName = vals.get(0);
+		abbreviation = vals.get(1);
+		PPA = vals.get(2).equals("Y");
 	}
 	
-	public String getField(String fieldName)
+	private void setSiteValues(ArrayList<String> vals)
 	{
-		return data.get(fieldName);
+		
 	}
 }

@@ -24,7 +24,7 @@ public class DatabaseManager
 	
 	private HashMap<Integer, ArrayList<String>> primaryKeys	= new HashMap<Integer, ArrayList<String>>();
 	private HashMap<Integer, String> activeSelections 		= new HashMap<Integer, String>();
-	private HashMap<Integer, ArrayList<String>> activeData  = new HashMap<Integer, ArrayList<String>>();
+	private Recipient activeRecipient;
 	
 	///////////////////////////////////////////////
 	//Constructor for the database manager object//
@@ -36,11 +36,11 @@ public class DatabaseManager
 		gui = SPGui;
 		
 		primaryKeys.put(Starship.CUSTOMERS, new ArrayList<String>());
-		primaryKeys.put(Starship.SITES, 	   new ArrayList<String>());
+		primaryKeys.put(Starship.SITES, 	new ArrayList<String>());
 		primaryKeys.put(Starship.ACCOUNTS,  new ArrayList<String>());
 		
 		activeSelections.put(Starship.CUSTOMERS, "");
-		activeSelections.put(Starship.SITES, 	"");
+		activeSelections.put(Starship.SITES, 	 "");
 		activeSelections.put(Starship.ACCOUNTS,  "");
 		
 		try { //to register the driver
@@ -98,12 +98,6 @@ public class DatabaseManager
 	public void setActiveSelection(int tableName, String selection)
 	{
 		activeSelections.put(tableName, selection);
-	}
-	
-	public ArrayList<String> getCompleteData(int tableName)
-	{
-		fetchCompleteData();
-		return activeData.get(tableName);
 	}
 	
 	
@@ -236,8 +230,9 @@ public class DatabaseManager
 			ResultSet rs = stmt.executeQuery(sql);		//Takes the above query and executes it in the DB
 			ResultSetMetaData rsData = rs.getMetaData();//Provides us extra info about the result set
 			int numCols = rsData.getColumnCount();
+			rs.next();
 			
-			for(int i = 0; i < numCols; i++)
+			for(int i = 1; i <= numCols; i++)
 				aList.add(rs.getString(i));
 			
 			conn.close(); 	//Closes all database resources: these are not local so they will not be destroyed by garbage collection
@@ -285,11 +280,13 @@ public class DatabaseManager
 	}
 
 	//Fetches all stored data for the given active selections
-	private void fetchCompleteData()
+	public void fetchCompleteData()
 	{
 		String activeCust = activeSelections.get(Starship.CUSTOMERS);
 		String activeSite = activeSelections.get(Starship.SITES);
 		String activeAcct = activeSelections.get(Starship.ACCOUNTS);
+		
+		HashMap<Integer, ArrayList<String>> activeData  = new HashMap<Integer, ArrayList<String>>();
 		
 		for(int i = Starship.CUSTOMERS; i <= Starship.ACCOUNTS; i++)
 		{
@@ -302,19 +299,21 @@ public class DatabaseManager
 			switch(i)
 			{
 				case Starship.CUSTOMERS:
-					sql += "customer where custName=" + activeCust + ";";
+					sql += "customer where custName='" + activeCust + "';";
 					break;
 				case Starship.SITES:
-					sql += "site where custName=" + activeCust + " AND siteName=" + activeSite + ";";
+					sql += "site where custName='" + activeCust + "' AND siteName='" + activeSite + "';";
 					break;
 				case Starship.ACCOUNTS:
-					sql += "accountnumber where custName=" + activeCust + " AND siteName=" + activeSite + " AND serviceName=" + activeAcct + ";";
+					sql += "accountnumber where custName='" + activeCust + "' AND siteName='" + activeSite + "' AND serviceName='" + activeAcct + "';";
 					break;
 				default:
 					sql += "*;";
 			}
-			
+			System.out.println(sql);
 			runSelectQuery(activeData.get(i), sql);
 		}
+		
+		activeRecipient = new Recipient(activeData.get(Starship.CUSTOMERS), activeData.get(Starship.SITES), activeData.get(Starship.ACCOUNTS));
 	}
 }
