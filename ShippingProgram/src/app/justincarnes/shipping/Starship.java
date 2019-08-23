@@ -3,7 +3,7 @@ package app.justincarnes.shipping;
 import java.awt.*;
 import javax.swing.*;
 
-public class ShippingProgram 
+public class Starship 
 {
 	public static final String SELECT_ONE = "--Select one--";
 	public static final String ADD_NEW 	  = "--Add new--";
@@ -31,7 +31,7 @@ public class ShippingProgram
 				catch (InstantiationException e)		  { System.out.println("Error instantiating."); }
 				catch (IllegalAccessException e) 		  { System.out.println("Illegal access."); }
 				
-				new ShippingProgramGUI();
+				new StarshipGUI();
 			}
 		});
 	}

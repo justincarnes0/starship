@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 
-public class ShippingProgramGUI
+public class StarshipGUI
 {
 	private DatabaseManager dbm;
 	
@@ -23,11 +23,11 @@ public class ShippingProgramGUI
 	private HashMap<Integer, JComboBox> comboBoxes = new HashMap<Integer, JComboBox>();
 
 	//Creates the application frame and launches the start page
-	public ShippingProgramGUI() 
+	public StarshipGUI() 
 	{
 		dbm = new DatabaseManager(this);
 		
-		frame = new JFrame("Starfish Shipping");	
+		frame = new JFrame("Starship");	
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
 		frame.setBounds(175, 1150, 500, 280);		
 		
@@ -119,12 +119,12 @@ public class ShippingProgramGUI
 		startPageCard.setLayout(new GridLayout(3, 1, 0, 40));
 		cardDeck.add(startPageCard, cardNames.get(0));
 		
-		createComboBox(ShippingProgram.CUSTOMERS);
-		createComboBox(ShippingProgram.SITES);
-		createComboBox(ShippingProgram.ACCOUNTS);
+		createComboBox(Starship.CUSTOMERS);
+		createComboBox(Starship.SITES);
+		createComboBox(Starship.ACCOUNTS);
 		
-		comboBoxes.get(ShippingProgram.SITES).setEnabled(false);
-		comboBoxes.get(ShippingProgram.ACCOUNTS).setEnabled(false);
+		comboBoxes.get(Starship.SITES).setEnabled(false);
+		comboBoxes.get(Starship.ACCOUNTS).setEnabled(false);
 	}
 	
 	//A method to create a ComboBox preceded by a label
@@ -135,13 +135,13 @@ public class ShippingProgramGUI
 		JLabel comboBoxLabel = new JLabel();
 		switch(tableName)
 		{
-			case ShippingProgram.CUSTOMERS:
+			case Starship.CUSTOMERS:
 				comboBoxLabel.setText("Select a customer:");
 				break;
-			case ShippingProgram.SITES:
+			case Starship.SITES:
 				comboBoxLabel.setText("Select a site:");
 				break;
-			case ShippingProgram.ACCOUNTS:
+			case Starship.ACCOUNTS:
 				comboBoxLabel.setText("Select an account:");
 				break;
 			default:
@@ -190,11 +190,11 @@ public class ShippingProgramGUI
 		//Each box will need a separate implementation of the prompt due to the differing numbers of fields
 		switch(tableName)
 		{
-			case ShippingProgram.CUSTOMERS:
+			case Starship.CUSTOMERS:
 				JTextField custName 	= new JTextField();
 				JTextField abbreviation = new JTextField();
 			
-				String[] choices = {ShippingProgram.SELECT_ONE, "Y", "N"}; //Making this one a choice to ensure an invalid entry isn't made
+				String[] choices = {Starship.SELECT_ONE, "Y", "N"}; //Making this one a choice to ensure an invalid entry isn't made
 				JComboBox PPA 	 = new JComboBox(choices);
 			
 				Object[] promptC = {"Customer name: ", custName, "Customer abbreviation: ", abbreviation, "Prepay & Add shipping?", PPA};
@@ -216,7 +216,7 @@ public class ShippingProgramGUI
 						JOptionPane.showMessageDialog(currentCard, "Fields cannot be left blank, please try again.");
 						optionC = JOptionPane.CANCEL_OPTION; 
 					}
-					else if(PPAChoice == ShippingProgram.SELECT_ONE)
+					else if(PPAChoice == Starship.SELECT_ONE)
 					{
 						JOptionPane.showMessageDialog(currentCard, "You must select an option for 'Prepay & add shipping?'.");
 						optionC = JOptionPane.CANCEL_OPTION;
@@ -231,7 +231,7 @@ public class ShippingProgramGUI
 				}
 				break;
 				
-			case ShippingProgram.SITES:
+			case Starship.SITES:
 				JTextField siteName 	 	  = new JTextField();
 				JTextField streetAddress 	  = new JTextField();
 				JTextField streetAddressLine2 = new JTextField();
@@ -241,7 +241,7 @@ public class ShippingProgramGUI
 				JTextField zipAddress 		  = new JTextField();
 				
 				Object[] promptS = 
-					{ "Customer name: ",  		 						 		  dbm.getActiveSelection(ShippingProgram.CUSTOMERS), 
+					{ "Customer name: ",  		 						 		  dbm.getActiveSelection(Starship.CUSTOMERS), 
 					  "Site name: ", 				 						 	  siteName, 
 					  "Street address (Line 1): ", 						 		  streetAddress,
 					  "Street address (Line 2, leave blank if not applicable): ", streetAddressLine2,
@@ -279,7 +279,7 @@ public class ShippingProgramGUI
 				}
 				break;	
 				
-			case ShippingProgram.ACCOUNTS:
+			case Starship.ACCOUNTS:
 				JTextField serviceName = new JTextField();
 				JTextField accountNum  = new JTextField();
 				JTextField billingZip  = new JTextField();
@@ -341,17 +341,17 @@ public class ShippingProgramGUI
 			if(active)
 			{
 				String selection = (String) selectionEvent.getItem(); //Holds the newly selected value
-				if(selection.equals(ShippingProgram.SELECT_ONE))	//Ensures that the default value is not passed along
+				if(selection.equals(Starship.SELECT_ONE))	//Ensures that the default value is not passed along
 					return;
-				else if(selection.equals(ShippingProgram.ADD_NEW))	//Prompt a new entry if "--Add new--" is selected
+				else if(selection.equals(Starship.ADD_NEW))	//Prompt a new entry if "--Add new--" is selected
 					promptNewEntry(tableName);
 				else {
 					dbm.setActiveSelection(tableName, selection); 
 					
 					//Repopulate the next box for customers and sites to match new selections
-					if(tableName < ShippingProgram.ACCOUNTS)
+					if(tableName < Starship.ACCOUNTS)
 					{
-						if(tableName < ShippingProgram.SITES)
+						if(tableName < Starship.SITES)
 							comboBoxes.get(tableName + 2).setEnabled(false);
 						repopComboBox(tableName + 1);
 					}
