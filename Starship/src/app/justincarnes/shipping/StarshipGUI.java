@@ -17,6 +17,9 @@ public class StarshipGUI
 	private JPanel controlPanel;
 	private JPanel cardDeck;
 	private JPanel currentCard;
+	private JPanel custInfo = new JPanel();
+	private JPanel siteInfo = new JPanel();
+	private JPanel acctInfo = new JPanel();
 	private CardLayout cl;
 	private ArrayList<JPanel> cards 	= new ArrayList<JPanel>();
 	private ArrayList<String> cardNames = new ArrayList<String>();
@@ -29,7 +32,7 @@ public class StarshipGUI
 		
 		frame = new JFrame("Starship");	
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
-		frame.setBounds(175, 175, 500, 280);		
+		frame.setBounds(175, 175, 1000, 280);		
 		
 		contentPane = (JPanel) frame.getContentPane();
 		contentPane.setLayout(new BorderLayout());	
@@ -96,7 +99,6 @@ public class StarshipGUI
 					if(cardIndex + 1 == 1)
 						previous.setEnabled(true);
 				}
-				dbm.fetchCompleteData();
 			}
 		});
 		
@@ -113,6 +115,10 @@ public class StarshipGUI
 	///////////////////
 	private void createFirstPage()
 	{
+		custInfo = new JPanel();
+		siteInfo = new JPanel();
+		acctInfo = new JPanel();
+		
 		cards.add(new JPanel());
 		cardNames.add("Page 1");
 		currentCard = cards.get(0);
@@ -121,11 +127,18 @@ public class StarshipGUI
 		cardDeck.add(startPageCard, cardNames.get(0));
 		
 		createComboBox(Starship.CUSTOMERS);
+		startPageCard.add(custInfo);
 		createComboBox(Starship.SITES);
+		startPageCard.add(siteInfo);
 		createComboBox(Starship.ACCOUNTS);
+		startPageCard.add(acctInfo);
 		
 		comboBoxes.get(Starship.SITES).setEnabled(false);
 		comboBoxes.get(Starship.ACCOUNTS).setEnabled(false);
+		
+		custInfo.setBorder(new LineBorder(Color.GRAY, 1, true));
+		siteInfo.setBorder(new LineBorder(Color.GRAY, 1, true));
+		acctInfo.setBorder(new LineBorder(Color.GRAY, 1, true));
 	}
 	
 	//A method to create a ComboBox preceded by a label
@@ -348,7 +361,7 @@ public class StarshipGUI
 					promptNewEntry(tableName);
 				else {
 					dbm.setActiveSelection(tableName, selection); 
-					
+					dbm.fetchCompleteData(tableName);
 					//Repopulate the next box for customers and sites to match new selections
 					if(tableName < Starship.ACCOUNTS)
 					{

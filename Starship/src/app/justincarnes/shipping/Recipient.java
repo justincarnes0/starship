@@ -27,6 +27,13 @@ public class Recipient
 		setAcctValues(acctVals);
 	}
 	
+	public void setVals(int tableName, ArrayList<String> vals)
+	{
+		if(tableName == Starship.CUSTOMERS) setCustValues(vals);
+		if(tableName == Starship.SITES)		setSiteValues(vals);
+		if(tableName == Starship.ACCOUNTS)  setAcctValues(vals); 
+	}
+	
 	private void setCustValues(ArrayList<String> vals)
 	{
 		custName = vals.get(0);

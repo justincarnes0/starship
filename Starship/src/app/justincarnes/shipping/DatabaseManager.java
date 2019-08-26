@@ -278,40 +278,31 @@ public class DatabaseManager
 	}
 
 	//Fetches all stored data for the given active selections
-	public void fetchCompleteData()
+	public void fetchCompleteData(int tableName)
 	{
 		String activeCust = activeSelections.get(Starship.CUSTOMERS);
 		String activeSite = activeSelections.get(Starship.SITES);
 		String activeAcct = activeSelections.get(Starship.ACCOUNTS);
 		
-		HashMap<Integer, ArrayList<String>> activeData  = new HashMap<Integer, ArrayList<String>>();
+		ArrayList<String> activeData = new ArrayList<String>();
 		
-		for(int i = Starship.CUSTOMERS; i <= Starship.ACCOUNTS; i++)
+		String sql = "select * from ";
+			
+		switch(tableName)
 		{
-			if(activeData.containsKey(i)) 
-				activeData.get(i).clear();
-			else activeData.put(i, new ArrayList<String>());
-			
-			String sql = "select * from ";
-			
-			switch(i)
-			{
-				case Starship.CUSTOMERS:
-					sql += "customer where custName='" + activeCust + "';";
-					break;
-				case Starship.SITES:
-					sql += "site where custName='" + activeCust + "' AND siteName='" + activeSite + "';";
-					break;
-				case Starship.ACCOUNTS:
-					sql += "accountnumber where custName='" + activeCust + "' AND siteName='" + activeSite + "' AND serviceName='" + activeAcct + "';";
-					break;
-				default:
-					sql += "*;";
+			case Starship.CUSTOMERS:
+				sql += "customer where custName='" + activeCust + "';";
+				break;
+			case Starship.SITES:
+				sql += "site where custName='" + activeCust + "' AND siteName='" + activeSite + "';";
+				break;
+			case Starship.ACCOUNTS:
+				sql += "accountnumber where custName='" + activeCust + "' AND siteName='" + activeSite + "' AND serviceName='" + activeAcct + "';";
+				break;
+			default:
+				sql += "*;";
 			}
-			System.out.println(sql);
-			runSelectQuery(activeData.get(i), sql);
-		}
-		
-		currentRecipient = new Recipient(activeData.get(Starship.CUSTOMERS), activeData.get(Starship.SITES), activeData.get(Starship.ACCOUNTS));
+		runSelectQuery(activeData, sql);
+		currentRecipient.setVals(tableName, activeData);
 	}
 }
