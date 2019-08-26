@@ -179,7 +179,6 @@ public class DatabaseManager
 	
 	public void updateSelectedCustomer(String custName, String abbreviation, String PPA)
 	{
-		
 	}
 	
 	
