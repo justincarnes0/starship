@@ -24,8 +24,7 @@ public class DatabaseManager
 	
 	private HashMap<Integer, ArrayList<String>> primaryKeys	= new HashMap<Integer, ArrayList<String>>();
 	private HashMap<Integer, String> activeSelections 		= new HashMap<Integer, String>();
-	private Recipient activeRecipient;
-	
+	public Recipient currentRecipient;
 	///////////////////////////////////////////////
 	//Constructor for the database manager object//
 	///////////////////////////////////////////////
@@ -59,7 +58,7 @@ public class DatabaseManager
 		String activeCustomer 		= activeSelections.get(Starship.CUSTOMERS);
 		String activeSite 			= activeSelections.get(Starship.SITES);
 		boolean invalidActiveCust   = activeCustomer.equals(Starship.SELECT_ONE) || activeCustomer.equals("");
-		boolean invalidActiveSite   = activeSite.equals(Starship.SELECT_ONE) 	|| activeSite.equals("");
+		boolean invalidActiveSite   = activeSite.equals(Starship.SELECT_ONE) 	 || activeSite.equals("");
 		
 		//Holds the name of the field to be retrieved for the active table
 		String fieldName = ((tableName == Starship.CUSTOMERS) 
@@ -73,7 +72,7 @@ public class DatabaseManager
 		
 		//Skip selection & return empty lists if an invalid selection makes it here
 		if(!(tableName == Starship.SITES 	&&  invalidActiveCust)
-		&& !(tableName == Starship.ACCOUNTS  && (invalidActiveCust || invalidActiveSite))) 
+		&& !(tableName == Starship.ACCOUNTS && (invalidActiveCust || invalidActiveSite))) 
 		{
 			//Build an SQL statement to retrieve the desired primary key list
 			String sql = "";
@@ -314,6 +313,6 @@ public class DatabaseManager
 			runSelectQuery(activeData.get(i), sql);
 		}
 		
-		activeRecipient = new Recipient(activeData.get(Starship.CUSTOMERS), activeData.get(Starship.SITES), activeData.get(Starship.ACCOUNTS));
+		currentRecipient = new Recipient(activeData.get(Starship.CUSTOMERS), activeData.get(Starship.SITES), activeData.get(Starship.ACCOUNTS));
 	}
 }
