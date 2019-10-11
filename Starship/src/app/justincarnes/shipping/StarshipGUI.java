@@ -41,12 +41,12 @@ public class StarshipGUI
 		cl = (CardLayout) cardDeck.getLayout();
 		
 		createControlPanel();
-		createFirstPage();
-		createSecondPage();
+		//createFirstPage();
+		//createSecondPage();
 		
-		cl.show(cardDeck, cardNames.get(0));
+		//cl.show(cardDeck, cardNames.get(0));
 		
-		frame.setVisible(true);
+		//frame.setVisible(true);
 	}
 	
 	/////////////////

@@ -3,6 +3,9 @@ package app.justincarnes.shipping;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.sqlite.*;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -13,18 +16,14 @@ import java.io.IOException;
 //A class to manage the MySQL database containing Starfish customer information
 public class DatabaseManager 
 {	
-	private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";	//Driver package
-	private static final String DB_URL 		= "jdbc:mysql://localhost/starfishcustomers";	//URL for database: for now, locally hosted
-	
-	//Database credentials
-	private static final String USERNAME = "shipping";
-	private static final String PASSWORD = "9146";
+	private static final String DB_URL = "jdbc:sqlite:starship.db";	//database filepath
 	
 	private StarshipGUI gui;	//Holds the current GUI instance: ideally this will allow me to display console messages in the GUI later on
 	
 	private HashMap<Integer, ArrayList<String>> primaryKeys	= new HashMap<Integer, ArrayList<String>>();
 	private HashMap<Integer, String> activeSelections 		= new HashMap<Integer, String>();
 	public Recipient currentRecipient;
+	
 	///////////////////////////////////////////////
 	//Constructor for the database manager object//
 	///////////////////////////////////////////////
@@ -42,10 +41,43 @@ public class DatabaseManager
 		activeSelections.put(Starship.SITES, 	 "");
 		activeSelections.put(Starship.ACCOUNTS,  "");
 		
-		try { //to register the driver
-			Class.forName(JDBC_DRIVER);
+		try { Class.forName("org.sqlite.JDBC"); }
+		catch(Exception e) { System.out.println(e.getClass().getName()); }
+		
+		checkDatabase();
+	}
+	
+	private void checkDatabase()
+	{
+		Connection conn = null;
+		Statement stmt = null;
+		
+		try { //to connect to database, execute the generated statement, and close the connection
+			System.out.println("Connecting to database...");
+			conn = DriverManager.getConnection(DB_URL);
+			stmt = conn.createStatement();
+			
+			try { 
+				ResultSet rs = stmt.executeQuery("select * from Customers;"); 
+				while(rs.next()) System.out.println(rs.getRow());
+				rs.close();
+			}
+			catch(SQLiteException e) { buildDatabase(); }
+			
+			conn.close();
+			stmt.close();
+		} catch(SQLException se) { se.printStackTrace(); } //If the SQL fails
+		
+		finally { //Close any instantiated DB objects no matter what
+			try { if (conn != null) conn.close(); } catch(SQLException se) {se.printStackTrace();}
+			try { if (stmt != null) stmt.close(); } catch(SQLException se2) {}
+			System.out.println("DB connection terminated.");
 		}
-		catch(Exception e) { e.printStackTrace(); }	//If there is a problem registering the driver
+	}
+	
+	private void buildDatabase()
+	{
+		System.out.println("Working as intended");
 	}
 	
 	///////////////////////
@@ -161,7 +193,7 @@ public class DatabaseManager
 		//The path of the file to be written to
 		//Selects 1 of 3 insert files based on the value of the second arg
 		String filepath = "sql/ShipmentProgramInsert-" + (fileSelection == Starship.CUSTOMERS 
-				? "Customer" : fileSelection == Starship.SITES ? "Site" : "Accounts") + ".sql";
+				? "Customer" : fileSelection == Starship.SITES ? "Site" : "Account") + ".sql";
 		
 		try {	//to point a FileWriter/PrintWriter combo at the desired SQL file
 			FileWriter  fw = new FileWriter(new File(filepath), true); //Append to file
@@ -194,7 +226,7 @@ public class DatabaseManager
 		
 		try { //to connect to database, execute the generated statement, and close the connection
 			System.out.println("Connecting to database...");
-			conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+			conn = DriverManager.getConnection(DB_URL);
 			stmt = conn.createStatement();
 
 			stmt.executeUpdate(sql);
@@ -221,7 +253,7 @@ public class DatabaseManager
 		try {
 			//Follows URL to database, provides credentials for access
 			System.out.println("Connecting to database...");
-			conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);		
+			conn = DriverManager.getConnection(DB_URL);		
 					
 			stmt = conn.createStatement();
 			
@@ -255,7 +287,7 @@ public class DatabaseManager
 		try {
 			//Follows URL to database, provides credentials for access
 			System.out.println("Connecting to database...");
-			conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);		
+			conn = DriverManager.getConnection(DB_URL);		
 					
 			stmt = conn.createStatement();
 			
