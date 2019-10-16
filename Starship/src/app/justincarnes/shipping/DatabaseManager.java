@@ -1,16 +1,9 @@
 package app.justincarnes.shipping;
 
+import java.io.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import java.util.*;
 import org.sqlite.*;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 
 
 //A class to manage the MySQL database containing Starfish customer information
@@ -47,6 +40,7 @@ public class DatabaseManager
 		checkDatabase();
 	}
 	
+	//Checks to see if the database exists and contains data
 	private void checkDatabase()
 	{
 		Connection conn = null;
@@ -58,11 +52,13 @@ public class DatabaseManager
 			stmt = conn.createStatement();
 			
 			try { 
+				//Try to select data from the Customers table in the DB
+				//If there is no data, an SQLiteException will be thrown: if the DB does not exist, running a statement on it will create it
 				ResultSet rs = stmt.executeQuery("select * from Customers;"); 
 				while(rs.next()) System.out.println(rs.getRow());
 				rs.close();
 			}
-			catch(SQLiteException e) { buildDatabase(); }
+			catch(SQLiteException e) { buildDatabase(); } //If there is no data in the DB, the database will be built
 			
 			conn.close();
 			stmt.close();
@@ -75,9 +71,54 @@ public class DatabaseManager
 		}
 	}
 	
+	//Creates and populates the database by parsing the SQL backup files and running the statements contained within
 	private void buildDatabase()
 	{
-		System.out.println("Working as intended");
+		try { 
+			Scanner filereader = new Scanner(new File("sql/StarshipTables.sql")); 
+			while(filereader.hasNextLine())
+			{
+				String sql = filereader.nextLine();
+				Connection conn = null;
+				Statement  stmt = null;
+					
+				try { //to connect to database, execute the generated statement, and close the connection
+					System.out.println("Connecting to database...");
+					conn = DriverManager.getConnection(DB_URL);
+					stmt = conn.createStatement();
+
+					stmt.execute(sql);
+						
+					conn.close();
+					stmt.close();
+				} catch(SQLException se) { se.printStackTrace(); } //If the SQL fails
+					
+				finally { //Close any instantiated DB objects no matter what
+					try { if (conn != null) conn.close(); } catch(SQLException se) {se.printStackTrace();}
+					try { if (stmt != null) stmt.close(); } catch(SQLException se2) {}
+					System.out.println("DB connection terminated.");
+				}
+			}
+			filereader.close();
+		} catch(FileNotFoundException e) { System.out.println("SQL File StarshipTables.sql could not be opened."); }
+		
+		//Parse each of the three backup insert files and run their statements
+		for(int i = 1; i < 4; i++)
+		{
+			String filepath = "sql/ShipmentProgramInsert-" + (i == Starship.CUSTOMERS 
+				? "Customer" : i == Starship.SITES ? "Site" : "Account") + ".sql";
+			
+			try {
+				Scanner filereader = new Scanner(new File(filepath));
+				while(filereader.hasNextLine())
+				{
+					String sql = filereader.nextLine();
+					runUpdateQuery(sql);
+				}
+				filereader.close();
+			} catch(FileNotFoundException e) { System.out.println("SQL File " + filepath.substring(4) + " could not be opened."); }
+		}
+		
 	}
 	
 	///////////////////////
@@ -218,7 +259,7 @@ public class DatabaseManager
 	//General helper functions//
 	////////////////////////////
 	
-	//A method to run a query where no data needs to be extracted from the ResultSet
+	//A method to run a query modifying the database contents
 	private void runUpdateQuery(String sql)
 	{
 		Connection conn = null;
