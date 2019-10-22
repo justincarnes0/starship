@@ -10,6 +10,7 @@ import org.sqlite.*;
 public class DatabaseManager 
 {	
 	private static final String DB_URL = "jdbc:sqlite:starship.db";	//database filepath
+	private static final String SQL_DIR = "C:/Users/Marc/Google Drive/JPP/misc/Shipping Program/backup/";
 	
 	private StarshipGUI gui;	//Holds the current GUI instance: ideally this will allow me to display console messages in the GUI later on
 	
@@ -105,7 +106,7 @@ public class DatabaseManager
 		//Parse each of the three backup insert files and run their statements
 		for(int i = 1; i < 4; i++)
 		{
-			String filepath = "sql/ShipmentProgramInsert-" + (i == Starship.CUSTOMERS 
+			String filepath = SQL_DIR + "ShipmentProgramInsert-" + (i == Starship.CUSTOMERS 
 				? "Customer" : i == Starship.SITES ? "Site" : "Account") + ".sql";
 			
 			try {
@@ -233,7 +234,7 @@ public class DatabaseManager
 	{
 		//The path of the file to be written to
 		//Selects 1 of 3 insert files based on the value of the second arg
-		String filepath = "sql/ShipmentProgramInsert-" + (fileSelection == Starship.CUSTOMERS 
+		String filepath = SQL_DIR + "ShipmentProgramInsert-" + (fileSelection == Starship.CUSTOMERS 
 				? "Customer" : fileSelection == Starship.SITES ? "Site" : "Account") + ".sql";
 		
 		try {	//to point a FileWriter/PrintWriter combo at the desired SQL file
