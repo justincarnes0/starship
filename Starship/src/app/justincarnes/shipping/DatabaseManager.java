@@ -6,7 +6,7 @@ import java.util.*;
 import org.sqlite.*;
 
 
-//A class to manage the MySQL database containing Starfish customer information
+//A class to manage the SQLite database containing Starfish customer information
 public class DatabaseManager 
 {	
 	private static final String DB_URL = "jdbc:sqlite:starship.db";	//database filepath
@@ -79,7 +79,7 @@ public class DatabaseManager
 			Scanner filereader = new Scanner(new File("sql/StarshipTables.sql")); 
 			while(filereader.hasNextLine())
 			{
-				String sql = filereader.nextLine();
+				String sql = filereader.nextLine();	//Every SQL statement is pulled directly from the table creation file
 				Connection conn = null;
 				Statement  stmt = null;
 					
@@ -113,11 +113,11 @@ public class DatabaseManager
 				Scanner filereader = new Scanner(new File(filepath));
 				while(filereader.hasNextLine())
 				{
-					String sql = filereader.nextLine();
-					runUpdateQuery(sql);
+					String sql = filereader.nextLine();	//Here each statement comes from the current insert file
+					runUpdateQuery(sql);	//This is why the insert and creation processes had to be separated: different query types
 				}
 				filereader.close();
-			} catch(FileNotFoundException e) { System.out.println("SQL File " + filepath.substring(4) + " could not be opened."); }
+			} catch(FileNotFoundException e) { System.out.println("SQL File " + filepath.substring(4) + " could not be opened.\n" + e.getStackTrace()); }
 		}
 		
 	}
